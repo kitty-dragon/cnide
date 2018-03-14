@@ -317,10 +317,7 @@ network.combinators = (function(){
   
   class SumDeciderCombinator extends DeciderCombinator {
     constructor(inputs, outputs, operator, right, outputSignal, asOne) {
-      super(inputs, outputs, operator);
-      this.right = right;
-      this.outputSignal = outputSignal;
-      this.asOne = asOne;
+      super(inputs, outputs, operator, 'each', right, outputSignal, asOne);
     }
     
     /** @Override */
@@ -339,9 +336,7 @@ network.combinators = (function(){
   
   class FilterDeciderCombinator extends DeciderCombinator {
     constructor(inputs, outputs, operator, right, asOne) {
-      super(inputs, outputs, operator);
-      this.right = right;
-      this.asOne = asOne;
+      super(inputs, outputs, operator, 'each', right, 'each', asOne);
     }
     
     /** @Override */
