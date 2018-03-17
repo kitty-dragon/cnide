@@ -18,6 +18,7 @@ const ui = (function(){
       
       const edit = utils.createHtmlElement(menu, 'div', ['edit', 'mode']);
       createButton_(edit, 'Run', 'play', () => this.compileAndRun());
+      createButton_(edit, 'Export', 'book', () => this.compileAndExport());
       const gitHub = createButton_(edit, 'GitHub', 'github', () => this.autosave())
       gitHub.href='https://github.com/charredutensil/cnide';
       gitHub.target='blank';
@@ -29,7 +30,10 @@ const ui = (function(){
       createButton_(run, 'Step', 'step-forward', () => this.compiled.step());
       createButton_(run, 'Slow', 'play', () => this.compiled.run(500));
       createButton_(run, 'Fast', 'forward', () => this.compiled.run(1000/60));
-      
+
+      const xport = utils.createHtmlElement(menu, 'div', ['export', 'mode']);
+      createButton_(xport, 'Edit', 'code', () => this.returnToEditMode());
+
       const editorElement = utils.createHtmlElement(
           this.wrapperElement, 'div', ['editor', 'edit', 'mode']);
       this.textarea = utils.createHtmlElement(editorElement, 'textarea');
@@ -45,8 +49,8 @@ const ui = (function(){
     compile_() {
       this.autosave();
       try {
-		      const network = parser.parse(this.textarea.value);
-		      return network;
+        const network = parser.parse(this.textarea.value);
+        return network;
       } catch (e) {
         if (e instanceof parser.SyntaxError) {
           alert('Syntax Error on line ' + e.location.start.line + ':\n' + e.message);
@@ -71,13 +75,35 @@ const ui = (function(){
         this.wrapperElement.classList.add('running');
       }, 1);
     }
+    compileAndExport() {
+      if (this.compiled) { return; }
+      const cn = this.compile_();
+      if (!cn) { return; }
+
+      let string;
+
+      try {
+        string = network.serialize(cn);
+      } catch (err) {
+        alert(err.message);
+        return;
+      }
+
+      this.compiled = new Exporter(string, this.wrapperElement);
+      this.textarea.disabled = true;
+      window.setTimeout(() => {
+        this.wrapperElement.classList.remove('editing');
+        this.wrapperElement.classList.add('exporting');
+      }, 1);
+    }
     returnToEditMode() {
       if (!this.compiled) { return; }
       this.compiled.destroy();
+      this.compiled = null;
+      this.wrapperElement.classList.remove('exporting');
       this.wrapperElement.classList.remove('running');
       this.wrapperElement.classList.add('editing');
       this.textarea.disabled = false;
-      this.compiled = null;
     }
     
     handleKeyPress_(event) {
@@ -135,6 +161,20 @@ const ui = (function(){
     destroy() {
       this.pause();
       window.setTimeout(() => this.network.getDomElement(null).remove(), 400);
+    }
+  }
+
+  class Exporter {
+    constructor(string, parentElement) {
+      this.editorElement = utils.createHtmlElement(
+          parentElement, 'div', ['editor', 'export', 'mode']);
+      this.textarea = utils.createHtmlElement(this.editorElement, 'textarea');
+      this.textarea.value = string;
+      this.textarea.readOnly = true;
+    }
+
+    destroy() {
+      window.setTimeout(() => this.editorElement.remove(), 400);
     }
   }
   

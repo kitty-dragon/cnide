@@ -38,6 +38,9 @@ $color-edit-menu-bg: #00bcd4;
 $color-run-bg: #222;
 $color-run-menu: #e69100;
 $color-run-menu-bg: #333;
+$color-export-bg: #283680;
+$color-export-menu: #fff;
+$color-export-menu-bg: #66c;
 $color-op-bg: #333;
 $color-op-bg-hover: #444;
 
@@ -137,6 +140,9 @@ body {
   .run .btn {
     color: $color-run-menu;
   }
+  .export .btn {
+    color: $color-export-menu;
+  }
 }
 
 
@@ -182,7 +188,12 @@ body {
     .menu {
       background: $color-run-menu-bg;
     }
-
+  }
+  &.exporting {
+    background: $color-export-bg;
+    .menu {
+      background: $color-export-menu-bg;
+    }
   }
   body.fatal & {
     .menu {
@@ -214,7 +225,7 @@ body {
         left 0.3s ease-in,
         opacity 0.3s ease-in;
   }
-  &.run {
+  &.run, &.export {
     left: 100%;
     opacity: 0;
     transition:
@@ -223,7 +234,8 @@ body {
   }
 }
 .editing .mode.edit,
-.running .mode.run {
+.running .mode.run,
+.exporting .mode.export {
   left: 0;
   opacity: initial;
   transition:

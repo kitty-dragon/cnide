@@ -405,13 +405,14 @@ network.combinators = (function(){
   
   const combinators = {};
   combinators.Pole = Pole;
-  combinators.Display = Display;
   combinators.ConstantCombinator = ConstantCombinator;
-  combinators.PulseButton = PulseButton;
   combinators.ToggleButton = ToggleButton;
+  combinators.PulseButton = PulseButton;
+  combinators.ArithmeticCombinator = ArithmeticCombinator;
   combinators.ValueAsValueArithmeticCombinator = ValueAsValueArithmeticCombinator;
   combinators.EachAsValueArithmeticCombinator = EachAsValueArithmeticCombinator;
   combinators.EachAsEachArithmeticCombinator = EachAsEachArithmeticCombinator;
+  combinators.DeciderCombinator = DeciderCombinator;
   combinators.SimpleDeciderCombinator = SimpleDeciderCombinator;
   combinators.SumDeciderCombinator = SumDeciderCombinator;
   combinators.FilterDeciderCombinator = FilterDeciderCombinator;

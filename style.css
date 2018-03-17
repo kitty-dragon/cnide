@@ -63,6 +63,8 @@ body {
     color: #fff; }
   .menu .run .btn {
     color: #e69100; }
+  .menu .export .btn {
+    color: #fff; }
 
 /* Editor */
 .editor-wrapper {
@@ -101,6 +103,10 @@ body {
     background: #222; }
     .editor-wrapper.running .menu {
       background: #333; }
+  .editor-wrapper.exporting {
+    background: #283680; }
+    .editor-wrapper.exporting .menu {
+      background: #66c; }
   body.fatal .editor-wrapper .menu {
     background-color: red; }
     body.fatal .editor-wrapper .menu .mode {
@@ -121,13 +127,14 @@ body {
     left: -100%;
     opacity: 0;
     transition: left 0.3s ease-in, opacity 0.3s ease-in; }
-  .mode.run {
+  .mode.run, .mode.export {
     left: 100%;
     opacity: 0;
     transition: left 0.3s ease-in, opacity 0.3s ease-in; }
 
 .editing .mode.edit,
-.running .mode.run {
+.running .mode.run,
+.exporting .mode.export {
   left: 0;
   opacity: initial;
   transition: left 0.3s ease-out, opacity 0.3s ease-out; }
