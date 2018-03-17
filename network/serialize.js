@@ -78,6 +78,10 @@ network.serialize = function (cn) {
       entity.name = 'arithmetic-combinator'
     } else if (element instanceof network.combinators.DeciderCombinator) {
       entity.name = 'decider-combinator'
+    } else if (element instanceof network.combinators.IO) {
+      entity.name = 'constant-combinator'
+    } else if (element instanceof network.combinators.Pole) {
+      entity.name = 'medium-electric-pole'
     } else {
       throw new Error('Unable to export element: ' + element.constructor.name)
     }
@@ -137,6 +141,29 @@ network.serialize = function (cn) {
       conditions.comparator = decider_operator_map[element.operator]
       conditions.output_signal = get_item(element.outputSignal)
       conditions.copy_count_from_input = !element.asOne
+    }
+
+    if (element instanceof network.combinators.IO && element.outputs.length) {
+      const filters = []
+      entity.control_behavior = { filters, is_on: false }
+
+      const letters = element.outputs[0].toUpperCase()
+                          .replace(/^[^A-Z]+|[^A-Z]+$/g, '')
+                          .replace(/[^A-Z]+/g, ' ')
+
+      let index = 0
+
+      for (const l of letters.split('').slice(0, 18)) {
+        index++
+
+        if (!l.match(/^[A-Z]$/)) continue
+
+        filters.push({
+          signal: { type: 'virtual', name: 'signal-' + l },
+          count:  1,
+          index:  index
+        })
+      }
     }
 
     const newlen = blueprint.entities.push(entity)

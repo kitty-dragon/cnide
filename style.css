@@ -416,6 +416,15 @@ body {
     background: #443d22; }
     .combinator.decider.detail .operator {
       color: #3e3; }
+  .combinator.io.thumbnail::before {
+    background: #252; }
+  .combinator.io.thumbnail .operator {
+    border-color: black;
+    color: black; }
+  .combinator.io.detail {
+    background: #252; }
+    .combinator.io.detail .operator {
+      color: black; }
   .combinator.display.thumbnail::before {
     background: #252; }
   .combinator.display.thumbnail .operator {

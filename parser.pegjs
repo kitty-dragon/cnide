@@ -55,6 +55,14 @@
       this.name = name;
       this.params = params;
       this.children = [];
+
+      if (name === 'Main') {
+        Object.keys(params).forEach(w => {
+          if (params[w] !== 'wire') return;
+
+          this.add(new Statement(location(), network.combinators.IO, new WiresRef([]), new WiresRef([w])));
+        });
+      }
     }
     
     add(child) {
@@ -121,7 +129,7 @@
       childBindings.prefix = prefix;
       Object.assign(childBindings.wireBindings, bindings.wireBindings);
       for (const param of Object.keys(this.wireBindings)) {
-        if (!unboundNetwork.params.has(param)) {
+        if (!unboundNetwork.params[param]) {
           error(this.name + ' network does not have parameter "' +
               param + '"', this.location);
         }
@@ -415,21 +423,21 @@ Statement
 
 NetworkParameters
   = wire:Wire _ "," _ rest:NetworkParameters {
-      if (rest.has(wire)) {
+      if (rest[wire]) {
         error('Duplicate parameter "' + wire + '"');
       }
-      rest.add(wire);
+      rest[wire] = 'wire';
       return rest;
     }
   / signal:Signal _ "," _ rest:NetworkParameters {
-      if (rest.has(signal.name)) {
+      if (rest[signal.name]) {
         error('Duplicate parameter "' + signal.name + '"');
       }
-      rest.add(signal.name);
+      rest[signal.name] = 'signal';
       return rest;
     }
-  / wire:Wire { return new Set([wire]); }
-  / signal:Signal { return new Set([signal.name]); }
+  / wire:Wire { return { [wire]: 'wire' }; }
+  / signal:Signal { return { [signal.name]: 'signal' }; }
   / []* { return new Set(); }
 
 CircuitNetwork

@@ -22,6 +22,15 @@ network.combinators = (function(){
     /** @Override */
     step(..._) {}
   }
+
+  /** Object, representing input or output of the Main network. */
+  class IO extends network.Combinator {
+    /** @Override */
+    cssClass() { return 'io'; }
+    
+    /** @Override */
+    step(..._) {}
+  }
   
   /** A combinator which always outputs a constant value. */
   class ConstantCombinator extends network.Combinator {
@@ -405,6 +414,7 @@ network.combinators = (function(){
   
   const combinators = {};
   combinators.Pole = Pole;
+  combinators.IO = IO;
   combinators.ConstantCombinator = ConstantCombinator;
   combinators.ToggleButton = ToggleButton;
   combinators.PulseButton = PulseButton;

@@ -544,6 +544,9 @@ body {
   &.decider {
     @include combinator-colors($color-dark-yellow, $color-dark-green, $color-light-green);
   }
+  &.io {
+    @include combinator-colors($color-dark-green, black, black);
+  }
   &.display {
     @include combinator-colors($color-dark-green, black, black);
     &.thumbnail .value {
