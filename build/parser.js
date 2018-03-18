@@ -3540,7 +3540,7 @@ function peg$parse(input, options) {
   }
 
 
-    const network = require('../network/base'); // build/../network/base
+    const network = require('../');
 
     class WiresRef {
       constructor(wires) {

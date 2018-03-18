@@ -3856,7 +3856,7 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  var network = require('../network/base'); // build/../network/base
+  var network = require('../');
 
   var WiresRef = function () {
     function WiresRef(wires) {
@@ -4162,604 +4162,17 @@ module.exports = {
   parse: peg$parse
 };
 
-},{"../network/base":2}],2:[function(require,module,exports){
+},{"../":2}],2:[function(require,module,exports){
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var utils = require('../utils');
-
-var COMBINATOR_HALF_HEIGHT = 96 / 2;
-
-var INSET_X = 20;
-var INSET_Y = 10;
-var WIRES_OFFSET = 5;
-
-var hiliteColor_ = function hiliteColor_(index) {
-  switch (index) {
-    case 1:
-      return '#f00';
-    case 2:
-      return '#e50';
-    case -1:
-      return '#0c0';
-    case -2:
-      return '#0b4';
-    default:
-      return '#444';
-  }
-};
-
-/**
- * Modifies the "to" object to add every value for every key from the "from" object.
- * This essentially "merges" two wire values together to form the final result.
- * Keys with a value of 0 are removed. Values are clamped within -MAX_INT...MAX_INT.
- */
-var mergeSignals_ = function mergeSignals_(to, from) {
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = Object.keys(from)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var k = _step.value;
-
-      var result = (to[k] || 0) + from[k];
-      if (result) {
-        to[k] = result <= utils.MIN_INT ? utils.MIN_INT : result >= utils.MAX_INT ? utils.MAX_INT : result;
-      } else {
-        delete to[k];
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
-};
-
-/**
- * Circuit network which contains all combinators and other networked things.
- */
-
-var CircuitNetwork = function (_utils$Renderable) {
-  _inherits(CircuitNetwork, _utils$Renderable);
-
-  function CircuitNetwork() {
-    _classCallCheck(this, CircuitNetwork);
-
-    var _this = _possibleConstructorReturn(this, (CircuitNetwork.__proto__ || Object.getPrototypeOf(CircuitNetwork)).call(this));
-
-    _this.tick = 0;
-    /**
-     * State is a map of wire names to maps of signal names to values.
-     */
-    _this.state = {};
-    _this.hiliteWires = {};
-    _this.children = [];
-    _this.colorCalculator = new network.segmenting.WireColorCalculator();
-    return _this;
-  }
-
-  /** Adds the child to this network. */
-
-
-  _createClass(CircuitNetwork, [{
-    key: 'add',
-    value: function add(child) {
-      this.children.push(child);
-      this.colorCalculator.add(child.inputs);
-      this.colorCalculator.add(child.outputs);
-    }
-
-    /** Forces a wire to be a color. */
-
-  }, {
-    key: 'forceColor',
-    value: function forceColor(wire, color) {
-      this.colorCalculator.forceColor(wire, color);
-    }
-
-    /** Runs the simulation one tick forward. */
-
-  }, {
-    key: 'step',
-    value: function step() {
-      this.tick++;
-      var newState = {};
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var c = _step2.value;
-
-          c.step(this.state, newState);
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
-      this.state = newState;
-      this.updateStateElem_();
-    }
-
-    /** @Override */
-
-  }, {
-    key: 'initElement',
-    value: function initElement(root) {
-      var _this2 = this;
-
-      root.classList.add('network-wrapper');
-      this.networkElement = utils.createHtmlElement(root, 'div', ['network']);
-      var detailWrapper = utils.createHtmlElement(root, 'div', ['detail-wrapper']);
-      var yMax = 0;
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
-
-      try {
-        for (var _iterator3 = this.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var c = _step3.value;
-
-          c.createElements(this.networkElement, detailWrapper, this);
-          if (c.yPos > yMax) {
-            yMax = c.yPos;
-          }
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
-        }
-      }
-
-      this.networkElement.style.height = (yMax + 2) * COMBINATOR_HALF_HEIGHT;
-      this.stateElem = utils.createHtmlElement(utils.createHtmlElement(root, 'div', ['state-wrapper']), 'div', ['state']);
-      this.updateStateElem_();
-      this.updateSegmentOverlay_();
-      this.onresize_ = function () {
-        return _this2.updateSegmentOverlay_();
-      };
-      window.addEventListener('resize', this.onresize_);
-    }
-  }, {
-    key: 'destroy',
-    value: function destroy() {
-      if (this.onresize_) {
-        window.removeEventListener('resize', this.onresize);
-      }
-    }
-  }, {
-    key: 'finalize',
-    value: function finalize() {
-      this.colors = this.colorCalculator.getColors();
-      this.segments = network.segmenting.getSegments(this, this.colors);
-    }
-  }, {
-    key: 'setSelected',
-    value: function setSelected(combinator, wires) {
-      if (this.selected) {
-        this.selected.thumbnail.classList.remove('selected');
-        this.selected.detail.classList.remove('selected');
-      }
-      this.selected = combinator;
-      if (combinator) {
-        this.selected.thumbnail.classList.add('selected');
-        this.selected.detail.classList.add('selected');
-      }
-
-      wires = Array.from(new Set(wires)).sort();
-
-      this.hiliteWires = {};
-      var colorsUsed = new Set();
-      for (var i = 0; i < wires.length; i++) {
-        var wire = wires[i];
-        var color = this.colors[wire];
-        if (colorsUsed.has(color)) {
-          this.hiliteWires[wire] = { red: 2, green: -2 }[color];
-        } else {
-          colorsUsed.add(color);
-          this.hiliteWires[wire] = { red: 1, green: -1 }[color];
-        }
-      }
-
-      this.updateSegmentOverlay_();
-      this.updateStateElem_();
-    }
-  }, {
-    key: 'updateSegmentOverlay_',
-    value: function updateSegmentOverlay_() {
-      if (this.segmentUnderlay) {
-        this.segmentUnderlay.remove();
-      }
-      if (this.segmentOverlay) {
-        this.segmentOverlay.remove();
-      }
-      if (!this.segments) {
-        return;
-      }
-      this.segmentUnderlay = createSvgElement_(this.networkElement, 'svg');
-      this.segmentUnderlay.classList.add('underlay');
-      this.segmentOverlay = createSvgElement_(this.networkElement, 'svg');
-      this.segmentOverlay.classList.add('overlay');
-      var rect = this.networkElement.getBoundingClientRect();
-      var _arr = [this.segmentUnderlay, this.segmentOverlay];
-      for (var _i = 0; _i < _arr.length; _i++) {
-        var svg = _arr[_i];
-        svg.classList.add('segments');
-        svg.setAttribute('width', rect.width);
-        svg.setAttribute('height', this.networkElement.scrollHeight);
-      }
-      var activeWires = Object.keys(this.hiliteWires).sort();
-
-      var activeConnections = {};
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = this.segments[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var segment = _step4.value;
-
-          var hiliteIndex = this.hiliteWires[segment.from.wire] || 0;
-
-          var fromRect = segment.from.combinator.thumbnail.getBoundingClientRect();
-          var toRect = segment.to.combinator.thumbnail.getBoundingClientRect();
-
-          var path = createSvgElement_(hiliteIndex ? this.segmentOverlay : this.segmentUnderlay, 'path');
-
-          var xOffset = hiliteIndex ?
-          // Highlighted wires: negative means start from the right.
-          hiliteIndex > 0 ? (hiliteIndex - 1) * WIRES_OFFSET + INSET_X : (hiliteIndex + 1) * WIRES_OFFSET + fromRect.width - INSET_X :
-          // Non-highlighted wires: just go from center
-          fromRect.width / 2;
-
-          var yOffset = hiliteIndex ? ((hiliteIndex + 5) % 5 - 1) * WIRES_OFFSET + INSET_Y : INSET_Y;
-
-          var x1 = fromRect.left + xOffset - rect.left;
-          var x2 = toRect.left + xOffset - rect.left;
-
-          var y1 = fromRect.top + (segment.from.hOffset ? fromRect.height - yOffset : yOffset) + this.networkElement.scrollTop - rect.top;
-
-          var y2 = toRect.top + (segment.to.hOffset ? fromRect.height - yOffset : yOffset) + this.networkElement.scrollTop - rect.top;
-
-          // TODO: one path / svg
-          var d = ['M', x1, y1];
-          d.push('L' + x1 + ',' + y2);
-          d.push('L' + x2 + ',' + y2);
-          path.setAttribute('d', d.join(' '));
-          path.setAttribute('fill', 'none');
-          path.setAttribute('stroke-width', 5);
-          path.setAttribute('stroke-linejoin', 'round');
-          path.setAttribute('stroke', hiliteColor_(hiliteIndex));
-          if (hiliteIndex) {
-            var k1 = x1 + ',' + y1;
-            if (!activeConnections[k1]) {
-              activeConnections[k1] = { x: x1, y: y1 };
-            }
-            var k2 = x2 + ',' + y2;
-            if (!activeConnections[k2]) {
-              activeConnections[k2] = { x: x2, y: y2 };
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
-      }
-
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
-
-      try {
-        for (var _iterator5 = Object.keys(activeConnections)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var k = _step5.value;
-
-          var c = activeConnections[k];
-          var circle = createSvgElement_(this.segmentOverlay, 'circle');
-          circle.setAttribute('cx', c.x);
-          circle.setAttribute('cy', c.y);
-          circle.setAttribute('r', 6);
-          circle.setAttribute('stroke-width', 2);
-          circle.setAttribute('stroke', 'black');
-          circle.setAttribute('fill', 'white');
-        }
-      } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion5 && _iterator5.return) {
-            _iterator5.return();
-          }
-        } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
-          }
-        }
-      }
-    }
-  }, {
-    key: 'updateStateElem_',
-    value: function updateStateElem_() {
-      var _this3 = this;
-
-      this.stateElem.innerHTML = '';
-      utils.createHtmlElement(this.stateElem, 'div', ['tick'], 'Tick #' + this.tick);
-      var wires = new Set(Object.keys(this.state).concat(Object.keys(this.hiliteWires)));
-
-      var _loop = function _loop(wire) {
-        if (Object.keys(_this3.state[wire] || {}).length == 0 && !_this3.hiliteWires[wire]) {
-          return 'continue';
-        }
-        var wireElem = utils.createHtmlElement(_this3.stateElem, 'div', ['wire', _this3.colors[wire]]);
-        if (_this3.hiliteWires[wire]) {
-          wireElem.style.color = hiliteColor_(_this3.hiliteWires[wire]);
-        }
-        wireElem.onclick = function () {
-          _this3.setSelected(null, [wire]);
-        };
-        utils.createHtmlElement(wireElem, 'div', ['name'], wire);
-        if (_this3.state[wire]) {
-          var signalTable = utils.createHtmlElement(wireElem, 'table', ['signal-table']);
-          var _iteratorNormalCompletion7 = true;
-          var _didIteratorError7 = false;
-          var _iteratorError7 = undefined;
-
-          try {
-            for (var _iterator7 = Object.keys(_this3.state[wire]).sort()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-              var k = _step7.value;
-
-              var tr = utils.createHtmlElement(signalTable, 'tr', []);
-              utils.createHtmlElement(tr, 'td', ['signal'], k);
-              utils.createHtmlElement(tr, 'td', ['value'], _this3.state[wire][k]);
-            }
-          } catch (err) {
-            _didIteratorError7 = true;
-            _iteratorError7 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion7 && _iterator7.return) {
-                _iterator7.return();
-              }
-            } finally {
-              if (_didIteratorError7) {
-                throw _iteratorError7;
-              }
-            }
-          }
-        }
-      };
-
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
-
-      try {
-        for (var _iterator6 = Array.from(wires).sort()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var wire = _step6.value;
-
-          var _ret = _loop(wire);
-
-          if (_ret === 'continue') continue;
-        }
-      } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion6 && _iterator6.return) {
-            _iterator6.return();
-          }
-        } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
-          }
-        }
-      }
-    }
-  }]);
-
-  return CircuitNetwork;
-}(utils.Renderable);
-
-var createSvgElement_ = function createSvgElement_(root, tag) {
-  var elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
-  root.appendChild(elem);
-  return elem;
-};
-
-/** Something that can be connected to a circuit network. */
-
-var Combinator = function () {
-  function Combinator(inputs, outputs) {
-    _classCallCheck(this, Combinator);
-
-    this.inputs = inputs;
-    this.outputs = outputs;
-    this.lastOutput = {};
-    this.xPos = -1;
-    this.yPos = -1;
-  }
-
-  /**
-   * Runs the simulation for this object one tick forward.
-   * Args:
-   *   state: The current (previous) state.
-   *   newState: The state after the current tick completes. This should be modified by
-   *       this function however it will affect the new state.
-   */
-
-
-  _createClass(Combinator, [{
-    key: 'step',
-    value: function step(state, newState) {
-      var input = {};
-      var _iteratorNormalCompletion8 = true;
-      var _didIteratorError8 = false;
-      var _iteratorError8 = undefined;
-
-      try {
-        for (var _iterator8 = this.inputs[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var w = _step8.value;
-
-          mergeSignals_(input, state[w] || {});
-        }
-      } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion8 && _iterator8.return) {
-            _iterator8.return();
-          }
-        } finally {
-          if (_didIteratorError8) {
-            throw _iteratorError8;
-          }
-        }
-      }
-
-      this.lastOutput = this.getOutput(input);
-      var _iteratorNormalCompletion9 = true;
-      var _didIteratorError9 = false;
-      var _iteratorError9 = undefined;
-
-      try {
-        for (var _iterator9 = this.outputs[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-          var _w = _step9.value;
-
-          newState[_w] = newState[_w] || {};
-          mergeSignals_(newState[_w], this.lastOutput);
-        }
-      } catch (err) {
-        _didIteratorError9 = true;
-        _iteratorError9 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion9 && _iterator9.return) {
-            _iterator9.return();
-          }
-        } finally {
-          if (_didIteratorError9) {
-            throw _iteratorError9;
-          }
-        }
-      }
-    }
-  }, {
-    key: 'createElements',
-    value: function createElements(thumbParent, detailParent, cn) {
-      var _this4 = this;
-
-      var classList = ['combinator', this.cssClass()];
-      this.thumbnail = utils.createHtmlElement(thumbParent, 'div', classList.concat(['thumbnail']));
-      this.thumbnail.style.left = 20 * this.xPos + '%';
-      this.thumbnail.style.top = COMBINATOR_HALF_HEIGHT * this.yPos + 'px';
-      this.detail = utils.createHtmlElement(detailParent, 'div', classList.concat(['detail']));
-      this.initElements();
-      this.thumbnail.onclick = function () {
-        cn.setSelected(_this4, _this4.inputs.concat(_this4.outputs));
-      };
-    }
-  }, {
-    key: 'cssClass',
-    value: function cssClass() {
-      throw NotImplementedError();
-    }
-
-    /**
-     * Runs the simulation one tick forward.
-     * Args:
-     *   input: A map of signal names to values for the sum of wires connected to the
-     *       input of this combinator.
-     * Returns:
-     *   A map of signal names to values for the wires connected to the output of this
-     *       combinator.
-     */
-
-  }, {
-    key: 'getOutput',
-    value: function getOutput(input) {
-      return {};
-    }
-  }, {
-    key: 'initElements',
-    value: function initElements() {}
-
-    /** Parses an operand as a number or signal, returning the value. */
-
-  }, {
-    key: 'opToNumber_',
-    value: function opToNumber_(values, operand) {
-      if (typeof operand == 'string') {
-        return values[operand] || 0;
-      } else {
-        return operand;
-      }
-    }
-  }]);
-
-  return Combinator;
-}();
-
-var network = {};
-network.CircuitNetwork = CircuitNetwork;
-network.Combinator = Combinator;
-module.exports = network;
-
-network.combinators = require('./combinators');
-network.segmenting = require('./segmenting');
-
-},{"../utils":16,"./combinators":3,"./segmenting":4}],3:[function(require,module,exports){
+module.exports = require('./lib/network');
+module.exports.combinators = require('./lib/combinators');
+module.exports.segmenting = require('./lib/segmenting');
+module.exports.serialize = require('./lib/serialize');
+module.exports.parse = require('./build/parser').parse;
+module.exports.SyntaxError = require('./build/parser').SyntaxError;
+
+},{"./build/parser":1,"./lib/combinators":3,"./lib/network":4,"./lib/segmenting":5,"./lib/serialize":6}],3:[function(require,module,exports){
 'use strict';
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
@@ -4772,8 +4185,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var network = require('./base');
-var utils = require('../utils');
+var network = require('../');
+var utils = require('./utils');
 
 /** Returns the list of classes for a given value, signal, or special signal. */
 var htmlClassListForSignal_ = function htmlClassListForSignal_(signal) {
@@ -5629,7 +5042,601 @@ combinators.Display = Display;
 combinators.Label = Label;
 module.exports = combinators;
 
-},{"../utils":16,"./base":2}],4:[function(require,module,exports){
+},{"../":2,"./utils":8}],4:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var utils = require('./utils');
+
+var COMBINATOR_HALF_HEIGHT = 96 / 2;
+
+var INSET_X = 20;
+var INSET_Y = 10;
+var WIRES_OFFSET = 5;
+
+var hiliteColor_ = function hiliteColor_(index) {
+  switch (index) {
+    case 1:
+      return '#f00';
+    case 2:
+      return '#e50';
+    case -1:
+      return '#0c0';
+    case -2:
+      return '#0b4';
+    default:
+      return '#444';
+  }
+};
+
+/**
+ * Modifies the "to" object to add every value for every key from the "from" object.
+ * This essentially "merges" two wire values together to form the final result.
+ * Keys with a value of 0 are removed. Values are clamped within -MAX_INT...MAX_INT.
+ */
+var mergeSignals_ = function mergeSignals_(to, from) {
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = Object.keys(from)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var k = _step.value;
+
+      var result = (to[k] || 0) + from[k];
+      if (result) {
+        to[k] = result <= utils.MIN_INT ? utils.MIN_INT : result >= utils.MAX_INT ? utils.MAX_INT : result;
+      } else {
+        delete to[k];
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+};
+
+/**
+ * Circuit network which contains all combinators and other networked things.
+ */
+
+var CircuitNetwork = function (_utils$Renderable) {
+  _inherits(CircuitNetwork, _utils$Renderable);
+
+  function CircuitNetwork() {
+    _classCallCheck(this, CircuitNetwork);
+
+    var _this = _possibleConstructorReturn(this, (CircuitNetwork.__proto__ || Object.getPrototypeOf(CircuitNetwork)).call(this));
+
+    _this.tick = 0;
+    /**
+     * State is a map of wire names to maps of signal names to values.
+     */
+    _this.state = {};
+    _this.hiliteWires = {};
+    _this.children = [];
+    _this.colorCalculator = new network.segmenting.WireColorCalculator();
+    return _this;
+  }
+
+  /** Adds the child to this network. */
+
+
+  _createClass(CircuitNetwork, [{
+    key: 'add',
+    value: function add(child) {
+      this.children.push(child);
+      this.colorCalculator.add(child.inputs);
+      this.colorCalculator.add(child.outputs);
+    }
+
+    /** Forces a wire to be a color. */
+
+  }, {
+    key: 'forceColor',
+    value: function forceColor(wire, color) {
+      this.colorCalculator.forceColor(wire, color);
+    }
+
+    /** Runs the simulation one tick forward. */
+
+  }, {
+    key: 'step',
+    value: function step() {
+      this.tick++;
+      var newState = {};
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var c = _step2.value;
+
+          c.step(this.state, newState);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      this.state = newState;
+      this.updateStateElem_();
+    }
+
+    /** @Override */
+
+  }, {
+    key: 'initElement',
+    value: function initElement(root) {
+      var _this2 = this;
+
+      root.classList.add('network-wrapper');
+      this.networkElement = utils.createHtmlElement(root, 'div', ['network']);
+      var detailWrapper = utils.createHtmlElement(root, 'div', ['detail-wrapper']);
+      var yMax = 0;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = this.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var c = _step3.value;
+
+          c.createElements(this.networkElement, detailWrapper, this);
+          if (c.yPos > yMax) {
+            yMax = c.yPos;
+          }
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      this.networkElement.style.height = (yMax + 2) * COMBINATOR_HALF_HEIGHT;
+      this.stateElem = utils.createHtmlElement(utils.createHtmlElement(root, 'div', ['state-wrapper']), 'div', ['state']);
+      this.updateStateElem_();
+      this.updateSegmentOverlay_();
+      this.onresize_ = function () {
+        return _this2.updateSegmentOverlay_();
+      };
+      window.addEventListener('resize', this.onresize_);
+    }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      if (this.onresize_) {
+        window.removeEventListener('resize', this.onresize);
+      }
+    }
+  }, {
+    key: 'finalize',
+    value: function finalize() {
+      this.colors = this.colorCalculator.getColors();
+      this.segments = network.segmenting.getSegments(this, this.colors);
+    }
+  }, {
+    key: 'setSelected',
+    value: function setSelected(combinator, wires) {
+      if (this.selected) {
+        this.selected.thumbnail.classList.remove('selected');
+        this.selected.detail.classList.remove('selected');
+      }
+      this.selected = combinator;
+      if (combinator) {
+        this.selected.thumbnail.classList.add('selected');
+        this.selected.detail.classList.add('selected');
+      }
+
+      wires = Array.from(new Set(wires)).sort();
+
+      this.hiliteWires = {};
+      var colorsUsed = new Set();
+      for (var i = 0; i < wires.length; i++) {
+        var wire = wires[i];
+        var color = this.colors[wire];
+        if (colorsUsed.has(color)) {
+          this.hiliteWires[wire] = { red: 2, green: -2 }[color];
+        } else {
+          colorsUsed.add(color);
+          this.hiliteWires[wire] = { red: 1, green: -1 }[color];
+        }
+      }
+
+      this.updateSegmentOverlay_();
+      this.updateStateElem_();
+    }
+  }, {
+    key: 'updateSegmentOverlay_',
+    value: function updateSegmentOverlay_() {
+      if (this.segmentUnderlay) {
+        this.segmentUnderlay.remove();
+      }
+      if (this.segmentOverlay) {
+        this.segmentOverlay.remove();
+      }
+      if (!this.segments) {
+        return;
+      }
+      this.segmentUnderlay = createSvgElement_(this.networkElement, 'svg');
+      this.segmentUnderlay.classList.add('underlay');
+      this.segmentOverlay = createSvgElement_(this.networkElement, 'svg');
+      this.segmentOverlay.classList.add('overlay');
+      var rect = this.networkElement.getBoundingClientRect();
+      var _arr = [this.segmentUnderlay, this.segmentOverlay];
+      for (var _i = 0; _i < _arr.length; _i++) {
+        var svg = _arr[_i];
+        svg.classList.add('segments');
+        svg.setAttribute('width', rect.width);
+        svg.setAttribute('height', this.networkElement.scrollHeight);
+      }
+      var activeWires = Object.keys(this.hiliteWires).sort();
+
+      var activeConnections = {};
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = this.segments[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var segment = _step4.value;
+
+          var hiliteIndex = this.hiliteWires[segment.from.wire] || 0;
+
+          var fromRect = segment.from.combinator.thumbnail.getBoundingClientRect();
+          var toRect = segment.to.combinator.thumbnail.getBoundingClientRect();
+
+          var path = createSvgElement_(hiliteIndex ? this.segmentOverlay : this.segmentUnderlay, 'path');
+
+          var xOffset = hiliteIndex ?
+          // Highlighted wires: negative means start from the right.
+          hiliteIndex > 0 ? (hiliteIndex - 1) * WIRES_OFFSET + INSET_X : (hiliteIndex + 1) * WIRES_OFFSET + fromRect.width - INSET_X :
+          // Non-highlighted wires: just go from center
+          fromRect.width / 2;
+
+          var yOffset = hiliteIndex ? ((hiliteIndex + 5) % 5 - 1) * WIRES_OFFSET + INSET_Y : INSET_Y;
+
+          var x1 = fromRect.left + xOffset - rect.left;
+          var x2 = toRect.left + xOffset - rect.left;
+
+          var y1 = fromRect.top + (segment.from.hOffset ? fromRect.height - yOffset : yOffset) + this.networkElement.scrollTop - rect.top;
+
+          var y2 = toRect.top + (segment.to.hOffset ? fromRect.height - yOffset : yOffset) + this.networkElement.scrollTop - rect.top;
+
+          // TODO: one path / svg
+          var d = ['M', x1, y1];
+          d.push('L' + x1 + ',' + y2);
+          d.push('L' + x2 + ',' + y2);
+          path.setAttribute('d', d.join(' '));
+          path.setAttribute('fill', 'none');
+          path.setAttribute('stroke-width', 5);
+          path.setAttribute('stroke-linejoin', 'round');
+          path.setAttribute('stroke', hiliteColor_(hiliteIndex));
+          if (hiliteIndex) {
+            var k1 = x1 + ',' + y1;
+            if (!activeConnections[k1]) {
+              activeConnections[k1] = { x: x1, y: y1 };
+            }
+            var k2 = x2 + ',' + y2;
+            if (!activeConnections[k2]) {
+              activeConnections[k2] = { x: x2, y: y2 };
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = Object.keys(activeConnections)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var k = _step5.value;
+
+          var c = activeConnections[k];
+          var circle = createSvgElement_(this.segmentOverlay, 'circle');
+          circle.setAttribute('cx', c.x);
+          circle.setAttribute('cy', c.y);
+          circle.setAttribute('r', 6);
+          circle.setAttribute('stroke-width', 2);
+          circle.setAttribute('stroke', 'black');
+          circle.setAttribute('fill', 'white');
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'updateStateElem_',
+    value: function updateStateElem_() {
+      var _this3 = this;
+
+      this.stateElem.innerHTML = '';
+      utils.createHtmlElement(this.stateElem, 'div', ['tick'], 'Tick #' + this.tick);
+      var wires = new Set(Object.keys(this.state).concat(Object.keys(this.hiliteWires)));
+
+      var _loop = function _loop(wire) {
+        if (Object.keys(_this3.state[wire] || {}).length == 0 && !_this3.hiliteWires[wire]) {
+          return 'continue';
+        }
+        var wireElem = utils.createHtmlElement(_this3.stateElem, 'div', ['wire', _this3.colors[wire]]);
+        if (_this3.hiliteWires[wire]) {
+          wireElem.style.color = hiliteColor_(_this3.hiliteWires[wire]);
+        }
+        wireElem.onclick = function () {
+          _this3.setSelected(null, [wire]);
+        };
+        utils.createHtmlElement(wireElem, 'div', ['name'], wire);
+        if (_this3.state[wire]) {
+          var signalTable = utils.createHtmlElement(wireElem, 'table', ['signal-table']);
+          var _iteratorNormalCompletion7 = true;
+          var _didIteratorError7 = false;
+          var _iteratorError7 = undefined;
+
+          try {
+            for (var _iterator7 = Object.keys(_this3.state[wire]).sort()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+              var k = _step7.value;
+
+              var tr = utils.createHtmlElement(signalTable, 'tr', []);
+              utils.createHtmlElement(tr, 'td', ['signal'], k);
+              utils.createHtmlElement(tr, 'td', ['value'], _this3.state[wire][k]);
+            }
+          } catch (err) {
+            _didIteratorError7 = true;
+            _iteratorError7 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                _iterator7.return();
+              }
+            } finally {
+              if (_didIteratorError7) {
+                throw _iteratorError7;
+              }
+            }
+          }
+        }
+      };
+
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = Array.from(wires).sort()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var wire = _step6.value;
+
+          var _ret = _loop(wire);
+
+          if (_ret === 'continue') continue;
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6.return) {
+            _iterator6.return();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+    }
+  }]);
+
+  return CircuitNetwork;
+}(utils.Renderable);
+
+var createSvgElement_ = function createSvgElement_(root, tag) {
+  var elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  root.appendChild(elem);
+  return elem;
+};
+
+/** Something that can be connected to a circuit network. */
+
+var Combinator = function () {
+  function Combinator(inputs, outputs) {
+    _classCallCheck(this, Combinator);
+
+    this.inputs = inputs;
+    this.outputs = outputs;
+    this.lastOutput = {};
+    this.xPos = -1;
+    this.yPos = -1;
+  }
+
+  /**
+   * Runs the simulation for this object one tick forward.
+   * Args:
+   *   state: The current (previous) state.
+   *   newState: The state after the current tick completes. This should be modified by
+   *       this function however it will affect the new state.
+   */
+
+
+  _createClass(Combinator, [{
+    key: 'step',
+    value: function step(state, newState) {
+      var input = {};
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
+
+      try {
+        for (var _iterator8 = this.inputs[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var w = _step8.value;
+
+          mergeSignals_(input, state[w] || {});
+        }
+      } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion8 && _iterator8.return) {
+            _iterator8.return();
+          }
+        } finally {
+          if (_didIteratorError8) {
+            throw _iteratorError8;
+          }
+        }
+      }
+
+      this.lastOutput = this.getOutput(input);
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
+
+      try {
+        for (var _iterator9 = this.outputs[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var _w = _step9.value;
+
+          newState[_w] = newState[_w] || {};
+          mergeSignals_(newState[_w], this.lastOutput);
+        }
+      } catch (err) {
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion9 && _iterator9.return) {
+            _iterator9.return();
+          }
+        } finally {
+          if (_didIteratorError9) {
+            throw _iteratorError9;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'createElements',
+    value: function createElements(thumbParent, detailParent, cn) {
+      var _this4 = this;
+
+      var classList = ['combinator', this.cssClass()];
+      this.thumbnail = utils.createHtmlElement(thumbParent, 'div', classList.concat(['thumbnail']));
+      this.thumbnail.style.left = 20 * this.xPos + '%';
+      this.thumbnail.style.top = COMBINATOR_HALF_HEIGHT * this.yPos + 'px';
+      this.detail = utils.createHtmlElement(detailParent, 'div', classList.concat(['detail']));
+      this.initElements();
+      this.thumbnail.onclick = function () {
+        cn.setSelected(_this4, _this4.inputs.concat(_this4.outputs));
+      };
+    }
+  }, {
+    key: 'cssClass',
+    value: function cssClass() {
+      throw NotImplementedError();
+    }
+
+    /**
+     * Runs the simulation one tick forward.
+     * Args:
+     *   input: A map of signal names to values for the sum of wires connected to the
+     *       input of this combinator.
+     * Returns:
+     *   A map of signal names to values for the wires connected to the output of this
+     *       combinator.
+     */
+
+  }, {
+    key: 'getOutput',
+    value: function getOutput(input) {
+      return {};
+    }
+  }, {
+    key: 'initElements',
+    value: function initElements() {}
+
+    /** Parses an operand as a number or signal, returning the value. */
+
+  }, {
+    key: 'opToNumber_',
+    value: function opToNumber_(values, operand) {
+      if (typeof operand == 'string') {
+        return values[operand] || 0;
+      } else {
+        return operand;
+      }
+    }
+  }]);
+
+  return Combinator;
+}();
+
+var network = {};
+network.CircuitNetwork = CircuitNetwork;
+network.Combinator = Combinator;
+module.exports = network;
+
+},{"./utils":8}],5:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -5642,7 +5649,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var network = require('./base');
+var network = require('../');
 
 /**
  * The size of a square within which all combinators can connect to each other without
@@ -5716,7 +5723,7 @@ var getConnections_ = function getConnections_(combinator) {
 
     try {
       for (var _iterator = combinator.inputs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        wire = _step.value;
+        var wire = _step.value;
 
         results.push(new WireConnection(combinator, wire, 0));
       }
@@ -5742,9 +5749,9 @@ var getConnections_ = function getConnections_(combinator) {
 
     try {
       for (var _iterator2 = combinator.outputs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        wire = _step2.value;
+        var _wire = _step2.value;
 
-        results.push(new WireConnection(combinator, wire, 1));
+        results.push(new WireConnection(combinator, _wire, 1));
       }
     } catch (err) {
       _didIteratorError2 = true;
@@ -6216,13 +6223,15 @@ segmenting.WireColorCalculator = WireColorCalculator;
 segmenting.getSegments = getSegments;
 module.exports = segmenting;
 
-},{"./base":2}],5:[function(require,module,exports){
+},{"../":2}],6:[function(require,module,exports){
 'use strict';
 
 var pako = require('pako/lib/deflate');
-var network = require('./base');
+var network = require('../');
 
 module.exports = function (cn) {
+  var to_json = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
   // TODO: make this extendable through language syntax
   var signals_str = 'signal-0 signal-1 signal-2 signal-3 signal-4 signal-5 signal-6 signal-7 signal-8 signal-9 signal-A signal-B signal-C signal-D signal-E signal-F signal-G signal-H signal-I signal-J signal-K signal-L signal-M signal-N signal-O signal-P signal-Q signal-R signal-S signal-T signal-U signal-V signal-W signal-X signal-Y signal-Z signal-red signal-green signal-blue signal-yellow signal-pink signal-cyan signal-white signal-grey signal-black';
   var items_str = 'wooden-chest iron-chest steel-chest storage-tank transport-belt fast-transport-belt express-transport-belt underground-belt fast-underground-belt express-underground-belt splitter fast-splitter express-splitter burner-inserter inserter long-handed-inserter fast-inserter filter-inserter stack-inserter stack-filter-inserter small-electric-pole medium-electric-pole big-electric-pole substation pipe pipe-to-ground pump rail train-stop rail-signal rail-chain-signal locomotive cargo-wagon fluid-wagon artillery-wagon car tank logistic-robot construction-robot logistic-chest-active-provider logistic-chest-passive-provider logistic-chest-storage logistic-chest-buffer logistic-chest-requester roboport small-lamp red-wire green-wire arithmetic-combinator decider-combinator constant-combinator power-switch programmable-speaker stone-brick concrete hazard-concrete refined-concrete refined-hazard-concrete landfill cliff-explosives iron-axe steel-axe repair-pack blueprint deconstruction-planner blueprint-book boiler steam-engine steam-turbine solar-panel accumulator nuclear-reactor heat-exchanger heat-pipe burner-mining-drill electric-mining-drill offshore-pump pumpjack stone-furnace steel-furnace electric-furnace assembling-machine-1 assembling-machine-2 assembling-machine-3 oil-refinery chemical-plant centrifuge lab beacon speed-module speed-module-2 speed-module-3 effectivity-module effectivity-module-2 effectivity-module-3 productivity-module productivity-module-2 productivity-module-3 raw-wood coal stone iron-ore copper-ore uranium-ore raw-fish wood iron-plate copper-plate solid-fuel steel-plate plastic-bar sulfur battery explosives crude-oil-barrel heavy-oil-barrel light-oil-barrel lubricant-barrel petroleum-gas-barrel sulfuric-acid-barrel water-barrel copper-cable iron-stick iron-gear-wheel empty-barrel electronic-circuit advanced-circuit processing-unit engine-unit electric-engine-unit flying-robot-frame satellite rocket-control-unit low-density-structure rocket-fuel nuclear-fuel uranium-235 uranium-238 uranium-fuel-cell used-up-uranium-fuel-cell science-pack-1 science-pack-2 science-pack-3 military-science-pack production-science-pack high-tech-science-pack space-science-pack pistol submachine-gun shotgun combat-shotgun rocket-launcher flamethrower land-mine firearm-magazine piercing-rounds-magazine uranium-rounds-magazine shotgun-shell piercing-shotgun-shell cannon-shell explosive-cannon-shell uranium-cannon-shell explosive-uranium-cannon-shell artillery-shell rocket explosive-rocket atomic-bomb flamethrower-ammo grenade cluster-grenade poison-capsule slowdown-capsule defender-capsule distractor-capsule destroyer-capsule discharge-defense-remote artillery-targeting-remote light-armor heavy-armor modular-armor power-armor power-armor-mk2 solar-panel-equipment fusion-reactor-equipment energy-shield-equipment energy-shield-mk2-equipment battery-equipment battery-mk2-equipment personal-laser-defense-equipment discharge-defense-equipment exoskeleton-equipment personal-roboport-equipment personal-roboport-mk2-equipment night-vision-equipment stone-wall gate gun-turret laser-turret flamethrower-turret artillery-turret radar rocket-silo';
@@ -6507,11 +6516,398 @@ module.exports = function (cn) {
   blueprint.item = 'blueprint';
   blueprint.version = 0x00000010001e0001;
 
-  //return JSON.stringify(blueprint, null, 2)
-  return '0' + btoa(pako.deflate(JSON.stringify({ blueprint: blueprint }), { to: 'string' }));
+  if (to_json) {
+    return JSON.stringify(blueprint, null, 2);
+  } else {
+    return '0' + btoa(pako.deflate(JSON.stringify({ blueprint: blueprint }), { to: 'string' }));
+  }
 };
 
-},{"./base":2,"pako/lib/deflate":6}],6:[function(require,module,exports){
+},{"../":2,"pako/lib/deflate":9}],7:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+//
+// Entry point for the web interface
+//
+
+var parser = require('../build/parser');
+var serialize = require('./serialize');
+var utils = require('./utils');
+
+var HELLO_WORLD_ = 'Main() {\n  \n}';
+
+var createButton_ = function createButton_(parentElement, text, icon, onClick) {
+  var elem = utils.createHtmlElement(parentElement, 'a', ['btn']);
+  utils.createHtmlElement(elem, 'i', ['icon', 'fa', 'fa-' + icon]);
+  utils.createHtmlElement(elem, 'div', ['text'], text);
+  elem.title = text;
+  elem.onclick = onClick;
+  return elem;
+};
+
+var Editor = function () {
+  function Editor(parentElement) {
+    var _this = this;
+
+    _classCallCheck(this, Editor);
+
+    this.wrapperElement = utils.createHtmlElement(parentElement, 'div', ['editor-wrapper', 'editing']);
+    var menu = utils.createHtmlElement(this.wrapperElement, 'div', ['menu']);
+
+    var edit = utils.createHtmlElement(menu, 'div', ['edit', 'mode']);
+    createButton_(edit, 'Run', 'play', function () {
+      return _this.compileAndRun();
+    });
+    createButton_(edit, 'Export', 'book', function () {
+      return _this.compileAndExport();
+    });
+    var gitHub = createButton_(edit, 'GitHub', 'github', function () {
+      return _this.autosave();
+    });
+    gitHub.href = 'https://github.com/charredutensil/cnide';
+    gitHub.target = 'blank';
+    gitHub.classList.add('right');
+
+    var run = utils.createHtmlElement(menu, 'div', ['run', 'mode']);
+    createButton_(run, 'Edit', 'code', function () {
+      return _this.returnToEditMode();
+    });
+    createButton_(run, 'Pause', 'pause', function () {
+      return _this.compiled.pause();
+    });
+    createButton_(run, 'Step', 'step-forward', function () {
+      return _this.compiled.step();
+    });
+    createButton_(run, 'Slow', 'play', function () {
+      return _this.compiled.run(500);
+    });
+    createButton_(run, 'Fast', 'forward', function () {
+      return _this.compiled.run(1000 / 60);
+    });
+
+    var xport = utils.createHtmlElement(menu, 'div', ['export', 'mode']);
+    createButton_(xport, 'Edit', 'code', function () {
+      return _this.returnToEditMode();
+    });
+
+    var editorElement = utils.createHtmlElement(this.wrapperElement, 'div', ['editor', 'edit', 'mode']);
+    this.textarea = utils.createHtmlElement(editorElement, 'textarea');
+    this.textarea.value = localStorage.getItem('autosave') || HELLO_WORLD_;
+    this.textarea.addEventListener('keypress', function (event) {
+      return _this.handleKeyPress_(event);
+    });
+    this.compiled = null;
+  }
+
+  _createClass(Editor, [{
+    key: 'autosave',
+    value: function autosave() {
+      localStorage.setItem('autosave', this.textarea.value);
+    }
+  }, {
+    key: 'compile_',
+    value: function compile_() {
+      this.autosave();
+      try {
+        var network = parser.parse(this.textarea.value);
+        return network;
+      } catch (e) {
+        if (e instanceof parser.SyntaxError) {
+          alert('Syntax Error on line ' + e.location.start.line + ':\n' + e.message);
+          this.textarea.setSelectionRange(e.location.start.offset, e.location.end.offset);
+          this.textarea.blur();
+          this.textarea.focus();
+          return null;
+        } else {
+          throw e;
+        }
+      }
+    }
+  }, {
+    key: 'compileAndRun',
+    value: function compileAndRun() {
+      var _this2 = this;
+
+      if (this.compiled) {
+        return;
+      }
+      var network = this.compile_();
+      if (!network) {
+        return;
+      }
+      this.compiled = new Emulator(network, this.wrapperElement);
+      this.textarea.disabled = true;
+      window.setTimeout(function () {
+        _this2.wrapperElement.classList.remove('editing');
+        _this2.wrapperElement.classList.add('running');
+      }, 1);
+    }
+  }, {
+    key: 'compileAndExport',
+    value: function compileAndExport() {
+      var _this3 = this;
+
+      if (this.compiled) {
+        return;
+      }
+      var cn = this.compile_();
+      if (!cn) {
+        return;
+      }
+
+      var string = void 0;
+
+      try {
+        string = serialize(cn);
+      } catch (err) {
+        alert(err.message);
+        return;
+      }
+
+      this.compiled = new Exporter(string, this.wrapperElement);
+      this.textarea.disabled = true;
+      window.setTimeout(function () {
+        _this3.wrapperElement.classList.remove('editing');
+        _this3.wrapperElement.classList.add('exporting');
+      }, 1);
+    }
+  }, {
+    key: 'returnToEditMode',
+    value: function returnToEditMode() {
+      if (!this.compiled) {
+        return;
+      }
+      this.compiled.destroy();
+      this.compiled = null;
+      this.wrapperElement.classList.remove('exporting');
+      this.wrapperElement.classList.remove('running');
+      this.wrapperElement.classList.add('editing');
+      this.textarea.disabled = false;
+    }
+  }, {
+    key: 'handleKeyPress_',
+    value: function handleKeyPress_(event) {
+      if (event.keyCode == 13) {
+        event.preventDefault();
+        var v = this.textarea.value;
+        var start = this.textarea.selectionStart;
+        var indent = '\n';
+        for (var i = v.lastIndexOf('\n', start - 1) + 1; i < v.length && v[i] == ' '; i++) {
+          indent += ' ';
+        }
+        if (start || start == '0') {
+          var end = this.textarea.selectionEnd;
+          this.textarea.value = v.substring(0, start) + indent + v.substring(end, v.length);
+        } else {
+          this.textarea.value += indent;
+        }
+        this.textarea.selectionStart = this.textarea.selectionEnd = start + indent.length;;
+      }
+    }
+  }]);
+
+  return Editor;
+}();
+
+var Emulator = function () {
+  function Emulator(network, parentElement) {
+    _classCallCheck(this, Emulator);
+
+    this.interval = 0;
+    this.network = network;
+    var element = this.network.getDomElement(parentElement);
+    element.classList.add('run');
+    element.classList.add('mode');
+  }
+
+  _createClass(Emulator, [{
+    key: 'step_',
+    value: function step_() {
+      this.network.step();
+    }
+  }, {
+    key: 'pause',
+    value: function pause() {
+      if (this.interval) {
+        window.clearInterval(this.interval);
+        this.interval = 0;
+      }
+    }
+  }, {
+    key: 'step',
+    value: function step() {
+      this.pause();
+      this.step_();
+    }
+  }, {
+    key: 'run',
+    value: function run(millisPerTick) {
+      var _this4 = this;
+
+      this.pause();
+      this.interval = window.setInterval(function () {
+        return _this4.step_();
+      }, millisPerTick);
+    }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      var _this5 = this;
+
+      this.pause();
+      window.setTimeout(function () {
+        return _this5.network.getDomElement(null).remove();
+      }, 400);
+    }
+  }]);
+
+  return Emulator;
+}();
+
+var Exporter = function () {
+  function Exporter(string, parentElement) {
+    _classCallCheck(this, Exporter);
+
+    this.editorElement = utils.createHtmlElement(parentElement, 'div', ['editor', 'export', 'mode']);
+    this.textarea = utils.createHtmlElement(this.editorElement, 'textarea');
+    this.textarea.value = string;
+    this.textarea.readOnly = true;
+  }
+
+  _createClass(Exporter, [{
+    key: 'destroy',
+    value: function destroy() {
+      var _this6 = this;
+
+      window.setTimeout(function () {
+        return _this6.editorElement.remove();
+      }, 400);
+    }
+  }]);
+
+  return Exporter;
+}();
+
+var ui = {};
+ui.Editor = Editor;
+document.addEventListener('DOMContentLoaded', function () {
+  return new ui.Editor(document.body);
+});
+
+window.onerror = function (msg, src, line, col, error) {
+  document.body.classList.add('fatal');
+  try {
+    src = src.substring(src.indexof('cnide'));
+  } catch (e) {}
+  try {
+    if (src && line) {
+      msg = msg + ' [line ' + line + ', col ' + col + ' of ' + src + ']';
+    }
+  } catch (e) {}
+  try {
+    utils.createHtmlElement(document.body, 'div', ['fatal-error-message'], msg);
+  } catch (e) {}
+  return false;
+};
+
+},{"../build/parser":1,"./serialize":6,"./utils":8}],8:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var utils = {};
+
+utils.MAX_INT = 2147483647;
+utils.MIN_INT = -2147483647;
+
+utils.createHtmlElement = function (parent, tag, classList, text) {
+  var element = document.createElement(tag);
+  if (classList) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = classList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var c = _step.value;
+
+        element.classList.add(c);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+  }
+  if (typeof text != 'undefined') {
+    element.appendChild(document.createTextNode(text));
+  }
+  if (parent) {
+    parent.appendChild(element);
+  }
+  return element;
+};
+
+utils.factorioHumanize = function (value) {
+  if (value >= utils.MAX_INT) {
+    return 'MAX';
+  }
+  if (value <= utils.MIN_INT) {
+    return '-MAX';
+  }
+  var negate = value < 0;
+  var v = negate ? -value : value;
+  var suffixIndex = 0;
+  while (v >= 1000) {
+    v /= 1000;
+    suffixIndex++;
+  }
+  return (negate ? '-' : '') + Math.floor(v) + ['', 'K', 'M', 'G'][suffixIndex];
+};
+
+var Renderable = function () {
+  function Renderable() {
+    _classCallCheck(this, Renderable);
+  }
+
+  _createClass(Renderable, [{
+    key: 'getDomElement',
+    value: function getDomElement(parent) {
+      if (!this.element) {
+        var element = utils.createHtmlElement(parent, 'div', []);
+        this.initElement(element);
+        this.element = element;
+      }
+      return this.element;
+    }
+  }, {
+    key: 'initElement',
+    value: function initElement(element) {}
+  }]);
+
+  return Renderable;
+}();
+
+utils.Renderable = Renderable;
+
+module.exports = utils;
+
+},{}],9:[function(require,module,exports){
 'use strict';
 
 
@@ -6913,7 +7309,7 @@ exports.deflate = deflate;
 exports.deflateRaw = deflateRaw;
 exports.gzip = gzip;
 
-},{"./utils/common":7,"./utils/strings":8,"./zlib/deflate":11,"./zlib/messages":12,"./zlib/zstream":14}],7:[function(require,module,exports){
+},{"./utils/common":10,"./utils/strings":11,"./zlib/deflate":14,"./zlib/messages":15,"./zlib/zstream":17}],10:[function(require,module,exports){
 'use strict';
 
 
@@ -7020,7 +7416,7 @@ exports.setTyped = function (on) {
 
 exports.setTyped(TYPED_OK);
 
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // String encode/decode helpers
 'use strict';
 
@@ -7207,7 +7603,7 @@ exports.utf8border = function (buf, max) {
   return (pos + _utf8len[buf[pos]] > max) ? pos : max;
 };
 
-},{"./common":7}],9:[function(require,module,exports){
+},{"./common":10}],12:[function(require,module,exports){
 'use strict';
 
 // Note: adler32 takes 12% for level 0 and 2% for level 6.
@@ -7260,7 +7656,7 @@ function adler32(adler, buf, len, pos) {
 
 module.exports = adler32;
 
-},{}],10:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 // Note: we can't get significant speed boost here.
@@ -7321,7 +7717,7 @@ function crc32(crc, buf, len, pos) {
 
 module.exports = crc32;
 
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -9197,7 +9593,7 @@ exports.deflatePrime = deflatePrime;
 exports.deflateTune = deflateTune;
 */
 
-},{"../utils/common":7,"./adler32":9,"./crc32":10,"./messages":12,"./trees":13}],12:[function(require,module,exports){
+},{"../utils/common":10,"./adler32":12,"./crc32":13,"./messages":15,"./trees":16}],15:[function(require,module,exports){
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -9231,7 +9627,7 @@ module.exports = {
   '-6':   'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -10453,7 +10849,7 @@ exports._tr_flush_block  = _tr_flush_block;
 exports._tr_tally = _tr_tally;
 exports._tr_align = _tr_align;
 
-},{"../utils/common":7}],14:[function(require,module,exports){
+},{"../utils/common":10}],17:[function(require,module,exports){
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -10502,384 +10898,4 @@ function ZStream() {
 
 module.exports = ZStream;
 
-},{}],15:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var parser = require('./build/parser');
-var serialize = require('./network/serialize');
-var utils = require('./utils');
-
-var HELLO_WORLD_ = 'Main() {\n  \n}';
-
-var createButton_ = function createButton_(parentElement, text, icon, onClick) {
-  var elem = utils.createHtmlElement(parentElement, 'a', ['btn']);
-  utils.createHtmlElement(elem, 'i', ['icon', 'fa', 'fa-' + icon]);
-  utils.createHtmlElement(elem, 'div', ['text'], text);
-  elem.title = text;
-  elem.onclick = onClick;
-  return elem;
-};
-
-var Editor = function () {
-  function Editor(parentElement) {
-    var _this = this;
-
-    _classCallCheck(this, Editor);
-
-    this.wrapperElement = utils.createHtmlElement(parentElement, 'div', ['editor-wrapper', 'editing']);
-    var menu = utils.createHtmlElement(this.wrapperElement, 'div', ['menu']);
-
-    var edit = utils.createHtmlElement(menu, 'div', ['edit', 'mode']);
-    createButton_(edit, 'Run', 'play', function () {
-      return _this.compileAndRun();
-    });
-    createButton_(edit, 'Export', 'book', function () {
-      return _this.compileAndExport();
-    });
-    var gitHub = createButton_(edit, 'GitHub', 'github', function () {
-      return _this.autosave();
-    });
-    gitHub.href = 'https://github.com/charredutensil/cnide';
-    gitHub.target = 'blank';
-    gitHub.classList.add('right');
-
-    var run = utils.createHtmlElement(menu, 'div', ['run', 'mode']);
-    createButton_(run, 'Edit', 'code', function () {
-      return _this.returnToEditMode();
-    });
-    createButton_(run, 'Pause', 'pause', function () {
-      return _this.compiled.pause();
-    });
-    createButton_(run, 'Step', 'step-forward', function () {
-      return _this.compiled.step();
-    });
-    createButton_(run, 'Slow', 'play', function () {
-      return _this.compiled.run(500);
-    });
-    createButton_(run, 'Fast', 'forward', function () {
-      return _this.compiled.run(1000 / 60);
-    });
-
-    var xport = utils.createHtmlElement(menu, 'div', ['export', 'mode']);
-    createButton_(xport, 'Edit', 'code', function () {
-      return _this.returnToEditMode();
-    });
-
-    var editorElement = utils.createHtmlElement(this.wrapperElement, 'div', ['editor', 'edit', 'mode']);
-    this.textarea = utils.createHtmlElement(editorElement, 'textarea');
-    this.textarea.value = localStorage.getItem('autosave') || HELLO_WORLD_;
-    this.textarea.addEventListener('keypress', function (event) {
-      return _this.handleKeyPress_(event);
-    });
-    this.compiled = null;
-  }
-
-  _createClass(Editor, [{
-    key: 'autosave',
-    value: function autosave() {
-      localStorage.setItem('autosave', this.textarea.value);
-    }
-  }, {
-    key: 'compile_',
-    value: function compile_() {
-      this.autosave();
-      try {
-        var network = parser.parse(this.textarea.value);
-        return network;
-      } catch (e) {
-        if (e instanceof parser.SyntaxError) {
-          alert('Syntax Error on line ' + e.location.start.line + ':\n' + e.message);
-          this.textarea.setSelectionRange(e.location.start.offset, e.location.end.offset);
-          this.textarea.blur();
-          this.textarea.focus();
-          return null;
-        } else {
-          throw e;
-        }
-      }
-    }
-  }, {
-    key: 'compileAndRun',
-    value: function compileAndRun() {
-      var _this2 = this;
-
-      if (this.compiled) {
-        return;
-      }
-      var network = this.compile_();
-      if (!network) {
-        return;
-      }
-      this.compiled = new Emulator(network, this.wrapperElement);
-      this.textarea.disabled = true;
-      window.setTimeout(function () {
-        _this2.wrapperElement.classList.remove('editing');
-        _this2.wrapperElement.classList.add('running');
-      }, 1);
-    }
-  }, {
-    key: 'compileAndExport',
-    value: function compileAndExport() {
-      var _this3 = this;
-
-      if (this.compiled) {
-        return;
-      }
-      var cn = this.compile_();
-      if (!cn) {
-        return;
-      }
-
-      var string = void 0;
-
-      try {
-        string = serialize(cn);
-      } catch (err) {
-        alert(err.message);
-        return;
-      }
-
-      this.compiled = new Exporter(string, this.wrapperElement);
-      this.textarea.disabled = true;
-      window.setTimeout(function () {
-        _this3.wrapperElement.classList.remove('editing');
-        _this3.wrapperElement.classList.add('exporting');
-      }, 1);
-    }
-  }, {
-    key: 'returnToEditMode',
-    value: function returnToEditMode() {
-      if (!this.compiled) {
-        return;
-      }
-      this.compiled.destroy();
-      this.compiled = null;
-      this.wrapperElement.classList.remove('exporting');
-      this.wrapperElement.classList.remove('running');
-      this.wrapperElement.classList.add('editing');
-      this.textarea.disabled = false;
-    }
-  }, {
-    key: 'handleKeyPress_',
-    value: function handleKeyPress_(event) {
-      if (event.keyCode == 13) {
-        event.preventDefault();
-        var v = this.textarea.value;
-        var start = this.textarea.selectionStart;
-        var indent = '\n';
-        for (var i = v.lastIndexOf('\n', start - 1) + 1; i < v.length && v[i] == ' '; i++) {
-          indent += ' ';
-        }
-        if (start || start == '0') {
-          var end = this.textarea.selectionEnd;
-          this.textarea.value = v.substring(0, start) + indent + v.substring(end, v.length);
-        } else {
-          this.textarea.value += indent;
-        }
-        this.textarea.selectionStart = this.textarea.selectionEnd = start + indent.length;;
-      }
-    }
-  }]);
-
-  return Editor;
-}();
-
-var Emulator = function () {
-  function Emulator(network, parentElement) {
-    _classCallCheck(this, Emulator);
-
-    this.interval = 0;
-    this.network = network;
-    var element = this.network.getDomElement(parentElement);
-    element.classList.add('run');
-    element.classList.add('mode');
-  }
-
-  _createClass(Emulator, [{
-    key: 'step_',
-    value: function step_() {
-      this.network.step();
-    }
-  }, {
-    key: 'pause',
-    value: function pause() {
-      if (this.interval) {
-        window.clearInterval(this.interval);
-        this.interval = 0;
-      }
-    }
-  }, {
-    key: 'step',
-    value: function step() {
-      this.pause();
-      this.step_();
-    }
-  }, {
-    key: 'run',
-    value: function run(millisPerTick) {
-      var _this4 = this;
-
-      this.pause();
-      this.interval = window.setInterval(function () {
-        return _this4.step_();
-      }, millisPerTick);
-    }
-  }, {
-    key: 'destroy',
-    value: function destroy() {
-      var _this5 = this;
-
-      this.pause();
-      window.setTimeout(function () {
-        return _this5.network.getDomElement(null).remove();
-      }, 400);
-    }
-  }]);
-
-  return Emulator;
-}();
-
-var Exporter = function () {
-  function Exporter(string, parentElement) {
-    _classCallCheck(this, Exporter);
-
-    this.editorElement = utils.createHtmlElement(parentElement, 'div', ['editor', 'export', 'mode']);
-    this.textarea = utils.createHtmlElement(this.editorElement, 'textarea');
-    this.textarea.value = string;
-    this.textarea.readOnly = true;
-  }
-
-  _createClass(Exporter, [{
-    key: 'destroy',
-    value: function destroy() {
-      var _this6 = this;
-
-      window.setTimeout(function () {
-        return _this6.editorElement.remove();
-      }, 400);
-    }
-  }]);
-
-  return Exporter;
-}();
-
-var ui = {};
-ui.Editor = Editor;
-document.addEventListener('DOMContentLoaded', function () {
-  return new ui.Editor(document.body);
-});
-
-},{"./build/parser":1,"./network/serialize":5,"./utils":16}],16:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var utils = {};
-
-utils.MAX_INT = 2147483647;
-utils.MIN_INT = -2147483647;
-
-utils.createHtmlElement = function (parent, tag, classList, text) {
-  var element = document.createElement(tag);
-  if (classList) {
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = classList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var c = _step.value;
-
-        element.classList.add(c);
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
-    }
-  }
-  if (typeof text != 'undefined') {
-    element.appendChild(document.createTextNode(text));
-  }
-  if (parent) {
-    parent.appendChild(element);
-  }
-  return element;
-};
-
-utils.factorioHumanize = function (value) {
-  if (value >= utils.MAX_INT) {
-    return 'MAX';
-  }
-  if (value <= utils.MIN_INT) {
-    return '-MAX';
-  }
-  var negate = value < 0;
-  var v = negate ? -value : value;
-  var suffixIndex = 0;
-  while (v >= 1000) {
-    v /= 1000;
-    suffixIndex++;
-  }
-  return (negate ? '-' : '') + Math.floor(v) + ['', 'K', 'M', 'G'][suffixIndex];
-};
-
-var Renderable = function () {
-  function Renderable() {
-    _classCallCheck(this, Renderable);
-  }
-
-  _createClass(Renderable, [{
-    key: 'getDomElement',
-    value: function getDomElement(parent) {
-      if (!this.element) {
-        var element = utils.createHtmlElement(parent, 'div', []);
-        this.initElement(element);
-        this.element = element;
-      }
-      return this.element;
-    }
-  }, {
-    key: 'initElement',
-    value: function initElement(element) {}
-  }]);
-
-  return Renderable;
-}();
-
-utils.Renderable = Renderable;
-
-module.exports = utils;
-
-window.onerror = function (msg, src, line, col, error) {
-  document.body.classList.add('fatal');
-  try {
-    src = src.substring(src.indexof('cnide'));
-  } catch (e) {}
-  try {
-    if (src && line) {
-      msg = msg + ' [line ' + line + ', col ' + col + ' of ' + src + ']';
-    }
-  } catch (e) {}
-  try {
-    utils.createHtmlElement(document.body, 'div', ['fatal-error-message'], msg);
-  } catch (e) {}
-  return false;
-};
-
-},{}]},{},[15]);
+},{}]},{},[7]);

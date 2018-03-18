@@ -8,12 +8,12 @@ build/style.css: build style.scss
 	#node-sass --source-map true ./style.scss ./build/style.css
 	node-sass ./style.scss ./build/style.css
 
-build/ui.js: build *.js network/*.js build/parser.js
-	#browserify ./ui.js $(BROWSERIFY_OPTIONS) --debug | exorcist ./build/ui.js.map > ./build/ui.js
-	browserify ./ui.js $(BROWSERIFY_OPTIONS) > ./build/ui.js
+build/ui.js: build *.js lib/*.js build/parser.js
+	#browserify ./lib/ui.js $(BROWSERIFY_OPTIONS) --debug | exorcist ./build/ui.js.map > ./build/ui.js
+	browserify ./lib/ui.js $(BROWSERIFY_OPTIONS) > ./build/ui.js
 
-build/parser.js: build parser.pegjs
-	pegjs -o ./build/parser.js ./parser.pegjs
+build/parser.js: build lib/parser.pegjs
+	pegjs -o ./build/parser.js ./lib/parser.pegjs
 
 build:
 	mkdir build
