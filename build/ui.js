@@ -5412,6 +5412,7 @@ var CircuitNetwork = function (_utils$Renderable) {
     value: function updateStateElem_() {
       var _this3 = this;
 
+      if (!this.stateElem) return;
       this.stateElem.innerHTML = '';
       utils.createHtmlElement(this.stateElem, 'div', ['tick'], 'Tick #' + this.tick);
       var wires = new Set(Object.keys(this.state).concat(Object.keys(this.hiliteWires)));
