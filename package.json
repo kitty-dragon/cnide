@@ -1,4 +1,16 @@
 {
+  "name": "cnide",
+  "version": "0.0.1",
+  "description": "web-based tool for developing complex circuit networks in Factorio",
+  "keywords": [ "factorio", "circuit network" ],
+  "homepage": "https://kitty-dragon.github.io/cnide/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitty-dragon/cnide"
+  },
+  "bugs": {
+    "url": "https://github.com/kitty-dragon/cnide/issues"
+  },
   "dependencies": {
     "pako": "^1.0.6"
   },
@@ -11,5 +23,6 @@
     "mocha": "^5.0.4",
     "node-sass": "^4.7.2",
     "pegjs": "^0.10.0"
-  }
+  },
+  "license": "MIT"
 }

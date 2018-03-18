@@ -6538,6 +6538,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var parser = require('../build/parser');
 var serialize = require('./serialize');
 var utils = require('./utils');
+var pkg_json = require('../package.json');
 
 var HELLO_WORLD_ = 'Main() {\n  \n}';
 
@@ -6569,7 +6570,7 @@ var Editor = function () {
     var gitHub = createButton_(edit, 'GitHub', 'github', function () {
       return _this.autosave();
     });
-    gitHub.href = 'https://github.com/charredutensil/cnide';
+    gitHub.href = pkg_json.repository.url;
     gitHub.target = 'blank';
     gitHub.classList.add('right');
 
@@ -6815,7 +6816,7 @@ window.onerror = function (msg, src, line, col, error) {
   return false;
 };
 
-},{"../build/parser":1,"./serialize":6,"./utils":8}],8:[function(require,module,exports){
+},{"../build/parser":1,"../package.json":18,"./serialize":6,"./utils":8}],8:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -10898,5 +10899,35 @@ function ZStream() {
 }
 
 module.exports = ZStream;
+
+},{}],18:[function(require,module,exports){
+module.exports={
+  "name": "cnide",
+  "version": "0.0.1",
+  "description": "web-based tool for developing complex circuit networks in Factorio",
+  "keywords": [ "factorio", "circuit network" ],
+  "homepage": "https://kitty-dragon.github.io/cnide/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitty-dragon/cnide"
+  },
+  "bugs": {
+    "url": "https://github.com/kitty-dragon/cnide/issues"
+  },
+  "dependencies": {
+    "pako": "^1.0.6"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
+    "browserify": "^16.1.1",
+    "exorcist": "^1.0.1",
+    "mocha": "^5.0.4",
+    "node-sass": "^4.7.2",
+    "pegjs": "^0.10.0"
+  },
+  "license": "MIT"
+}
 
 },{}]},{},[7]);
