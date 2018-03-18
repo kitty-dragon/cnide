@@ -1,20 +1,11 @@
 {
-  const network = window.network || {combinators: {}};
-  if (!window.network) {
-    class CN {
-      constructor(){this.c=[];}
-      add(e){this.c.push(e);}
-      finalize(){}
-      forceColor(w, c){this.c.push([w, 'is', c]);}
-    }
-    network.CircuitNetwork = CN;
-  }
-  
+  const network = require('../network/base'); // build/../network/base
+
   class WiresRef {
     constructor(wires) {
       this.wires = wires;
     }
-    
+
     bind(bindings) {
       const r = [];
       for (const wire of this.wires) {
@@ -24,17 +15,17 @@
       return r;
     }
   }
-  
+
   class SignalRef {
     constructor(name) {
       this.name = name;
     }
-    
+
     bind(bindings) {
       return bindings.signalBindings[this.name] || this.name;
     }
   }
-  
+
   class Bindings {
     constructor() {
       this.networks = {};
@@ -43,13 +34,13 @@
       this.signalBindings = {};
       this.lastUid = 0;
     }
-    
+
     uid() {
       this.lastUid++;
       return this.lastUid.toString(16);
     }
   }
-  
+
   class UnboundCircuitNetwork {
     constructor(name, params) {
       this.name = name;
@@ -64,18 +55,18 @@
         });
       }
     }
-    
+
     add(child) {
       this.children.push(child);
     }
-    
+
     bind(cn, bindings) {
       for (const child of this.children) {
         child.bind(cn, bindings);
       }
     }
   }
-  
+
   /**
    * A constructor ready to be bound to its arguments.
    * The binding isn't done immediately to allow for substitutions.
@@ -86,7 +77,7 @@
       this.klass = klass;
       this.args = args;
     }
-    
+
     bind(cn, bindings) {
       const boundArgs = [];
       for (const arg of this.args) {
@@ -107,7 +98,7 @@
       }
     }
   }
-  
+
   class SubNetworkReferenceStatement {
     constructor(location, name, wireBindings, signalBindings) {
       this.location = location;
@@ -115,7 +106,7 @@
       this.wireBindings = wireBindings;
       this.signalBindings = signalBindings
     }
-    
+
     bind(cn, bindings) {
       if (!(this.name in bindings.networks)) {
         error(this.name + ' network is not defined in this scope.', this.location);
@@ -139,14 +130,14 @@
       unboundNetwork.bind(cn, childBindings);
     }
   }
-  
+
   class DeclareColorStatement {
     constructor(location, wire, color) {
       this.location = location;
       this.wire = wire;
       this.color = color;
     }
-    
+
     bind(cn, bindings) {
       cn.forceColor(this.wire, this.color);
     }
@@ -194,7 +185,7 @@ ReservedWord
 // Network Name
 NetworkName "network name"
   = [A-Z][A-Za-z0-9]* { return text(); }
-  
+
 // Named Wires
 Wire "wire"
   = [A-Z][A-Z0-9_]* { return text(); }
@@ -207,7 +198,7 @@ WirePair
 // Operands
 Integer "integer"
   = "-"? [0-9]+ { return parseInt(text(), 10); }
-  
+
 Signal "signal"
   = !ReservedWord [a-z][a-z0-9_]* { return new SignalRef(text()); }
 
@@ -278,7 +269,7 @@ ValueAsValueArithmeticCombinator
     "->" _ outputs:WirePair
     {
       return new Statement(location(),
-          network.combinators.ValueAsValueArithmeticCombinator, 
+          network.combinators.ValueAsValueArithmeticCombinator,
           inputs, outputs, operator, left, right, outputSignal);
     }
 
@@ -290,7 +281,7 @@ EachAsValueArithmeticCombinator
     "->" _ outputs:WirePair
     {
       return new Statement(location(),
-          network.combinators.EachAsValueArithmeticCombinator, 
+          network.combinators.EachAsValueArithmeticCombinator,
           inputs, outputs, operator, right, outputSignal);
     }
 
@@ -302,7 +293,7 @@ EachAsEachArithmeticCombinator
     "->" _ outputs:WirePair
     {
       return new Statement(location(),
-          network.combinators.EachAsEachArithmeticCombinator, 
+          network.combinators.EachAsEachArithmeticCombinator,
           inputs, outputs, operator, right);
     }
 
@@ -321,7 +312,7 @@ SimpleDeciderCombinator
     "->" _ outputs:WirePair
     {
       return new Statement(location(),
-          network.combinators.SimpleDeciderCombinator, 
+          network.combinators.SimpleDeciderCombinator,
           inputs, outputs, operator, left, right, outputSignal, !!asOne);
     }
 
@@ -335,7 +326,7 @@ SumDeciderCombinator
     "->" _ outputs:WirePair
     {
       return new Statement(location(),
-          network.combinators.SumDeciderCombinator, 
+          network.combinators.SumDeciderCombinator,
           inputs, outputs, operator, right, outputSignal, !!asOne);
     }
 
@@ -349,7 +340,7 @@ FilterDeciderCombinator
     "->" _ outputs:WirePair
     {
       return new Statement(location(),
-          network.combinators.FilterDeciderCombinator, 
+          network.combinators.FilterDeciderCombinator,
           inputs, outputs, operator, right, !!asOne);
     }
 
@@ -395,7 +386,7 @@ Bindings
       return rest;
     }
   / []* { return {wires: {}, signals: {}}; }
-    
+
 SubNetworkReference
   = name:NetworkName _ "(" _ bindings:Bindings _ ")" {
     return new SubNetworkReferenceStatement(
@@ -406,12 +397,12 @@ DeclareColor
   = Declare _ wire:Wire _ As _ color:("red"/"green") {
       return new DeclareColorStatement(location(), wire, color)
     }
-  
+
 Label
   = level:$"#"+ [ \t]* text:$[^\n]* {
       return new Statement(location(), network.combinators.Label, text, level.length);
     }
-    
+
 Statement
   = ConstantCombinator
   / ArithmeticCombinator
