@@ -18,7 +18,10 @@ build/parser.js: build lib/parser.pegjs
 build:
 	mkdir build
 
+test:
+	mocha ./test/
+
 clean:
 	rm -rf build/
 
-.PHONY: all clean
+.PHONY: all clean test

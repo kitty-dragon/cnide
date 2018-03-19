@@ -24,5 +24,9 @@
     "node-sass": "^4.7.2",
     "pegjs": "^0.10.0"
   },
+  "scripts": {
+    "build": "make all",
+    "test": "make test"
+  },
   "license": "MIT"
 }
