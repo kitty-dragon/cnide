@@ -20,6 +20,9 @@ body {
 .hidden {
   display: none; }
 
+body {
+  overflow: hidden; }
+
 /* Menu */
 .menu {
   position: relative;

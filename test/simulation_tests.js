@@ -1,5 +1,5 @@
 const assert = require('assert')
-const parse = require('../').parse
+const compile = require('../').compile
 
 const assertStateEquals = function(expected, actual) {
   const message = ["Expected %o but was %o", expected, actual];
@@ -15,8 +15,8 @@ const assertStateEquals = function(expected, actual) {
   }
 }
 
-const simulateAndAssertTests = function(code, ticks, expectedState) {
-  const simulatedNetwork = parse(code);
+const simulateAndAssertTests = async function (code, ticks, expectedState) {
+  const simulatedNetwork = await compile(code);
   for (let i = 0; i < ticks; i++) {
     simulatedNetwork.step();
   }
