@@ -5262,8 +5262,7 @@ var ToggleButton = function (_ConstantCombinator) {
       _get(ToggleButton.prototype.__proto__ || Object.getPrototypeOf(ToggleButton.prototype), 'initElements', this).call(this);
       var _arr = [this.thumbnail, this.detail];
       for (var _i = 0; _i < _arr.length; _i++) {
-        parent = _arr[_i];
-
+        var parent = _arr[_i];
         var button = utils.createHtmlElement(parent, 'div', ['button']);
         button.onclick = function () {
           return _this6.setActive_(!_this6.active);
