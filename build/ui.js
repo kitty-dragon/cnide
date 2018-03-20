@@ -4927,6 +4927,8 @@ module.exports.test = require('./lib/test');
 },{"./lib/combinators":3,"./lib/compile":4,"./lib/network":5,"./lib/segmenting":6,"./lib/serialize":7,"./lib/test":8}],3:[function(require,module,exports){
 'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -5413,6 +5415,39 @@ var ArithmeticCombinator = function (_Combinator4) {
     key: 'initElements',
     value: function initElements() {
       utils.createHtmlElement(this.thumbnail, 'div', ['operator'], this.operator);
+
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = this.inputs.entries()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var _ref = _step3.value;
+
+          var _ref2 = _slicedToArray(_ref, 2);
+
+          var i = _ref2[0];
+          var wire = _ref2[1];
+
+          if (i) this.detail.innerHTML += ', ';
+          utils.createHtmlElement(this.detail, 'span', ['wire'], wire);
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      utils.createHtmlElement(this.detail, 'span', ['arrow'], ' -> ');
       utils.createHtmlElement(this.detail, 'span', htmlClassListForSignal_(this.left), this.left);
       this.detail.innerHTML += ' ';
       utils.createHtmlElement(this.detail, 'span', ['operator'], this.operator);
@@ -5420,6 +5455,37 @@ var ArithmeticCombinator = function (_Combinator4) {
       utils.createHtmlElement(this.detail, 'span', htmlClassListForSignal_(this.right), this.right);
       utils.createHtmlElement(this.detail, 'span', ['as'], ' as ');
       utils.createHtmlElement(this.detail, 'span', htmlClassListForSignal_(this.outputSignal), this.outputSignal);
+      utils.createHtmlElement(this.detail, 'span', ['arrow'], ' -> ');
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = this.outputs.entries()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var _ref3 = _step4.value;
+
+          var _ref4 = _slicedToArray(_ref3, 2);
+
+          var _i2 = _ref4[0];
+          var _wire = _ref4[1];
+
+          if (_i2) this.detail.innerHTML += ', ';
+          utils.createHtmlElement(this.detail, 'span', ['wire'], _wire);
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
     }
   }]);
 
@@ -5471,27 +5537,27 @@ var EachAsValueArithmeticCombinator = function (_ArithmeticCombinator2) {
     key: 'getOutput',
     value: function getOutput(input) {
       var sum = 0;
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator3 = Object.keys(input)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var k = _step3.value;
+        for (var _iterator5 = Object.keys(input)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var k = _step5.value;
 
           sum += this.apply_(input, k, this.right);
         }
       } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
           }
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          if (_didIteratorError5) {
+            throw _iteratorError5;
           }
         }
       }
@@ -5524,27 +5590,27 @@ var EachAsEachArithmeticCombinator = function (_ArithmeticCombinator3) {
     key: 'getOutput',
     value: function getOutput(input) {
       var r = {};
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
 
       try {
-        for (var _iterator4 = Object.keys(input)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var k = _step4.value;
+        for (var _iterator6 = Object.keys(input)[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var k = _step6.value;
 
           r[k] = this.apply_(input, k, this.right);
         }
       } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
+          if (!_iteratorNormalCompletion6 && _iterator6.return) {
+            _iterator6.return();
           }
         } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
+          if (_didIteratorError6) {
+            throw _iteratorError6;
           }
         }
       }
@@ -5593,6 +5659,38 @@ var DeciderCombinator = function (_Combinator5) {
     key: 'initElements',
     value: function initElements() {
       utils.createHtmlElement(this.thumbnail, 'div', ['operator'], this.operator);
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = this.inputs.entries()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var _ref5 = _step7.value;
+
+          var _ref6 = _slicedToArray(_ref5, 2);
+
+          var i = _ref6[0];
+          var wire = _ref6[1];
+
+          if (i) this.detail.innerHTML += ', ';
+          utils.createHtmlElement(this.detail, 'span', ['wire'], wire);
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7.return) {
+            _iterator7.return();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
+
+      utils.createHtmlElement(this.detail, 'span', ['arrow'], ' -> ');
       utils.createHtmlElement(this.detail, 'span', htmlClassListForSignal_(this.left), this.left);
       this.detail.innerHTML += ' ';
       utils.createHtmlElement(this.detail, 'span', ['operator'], this.operator);
@@ -5603,6 +5701,37 @@ var DeciderCombinator = function (_Combinator5) {
         utils.createHtmlElement(this.detail, 'span', ['as'], '1 as ');
       }
       utils.createHtmlElement(this.detail, 'span', htmlClassListForSignal_(this.outputSignal), this.outputSignal);
+      utils.createHtmlElement(this.detail, 'span', ['arrow'], ' -> ');
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
+
+      try {
+        for (var _iterator8 = this.outputs.entries()[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var _ref7 = _step8.value;
+
+          var _ref8 = _slicedToArray(_ref7, 2);
+
+          var _i3 = _ref8[0];
+          var _wire2 = _ref8[1];
+
+          if (_i3) this.detail.innerHTML += ', ';
+          utils.createHtmlElement(this.detail, 'span', ['wire'], _wire2);
+        }
+      } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion8 && _iterator8.return) {
+            _iterator8.return();
+          }
+        } finally {
+          if (_didIteratorError8) {
+            throw _iteratorError8;
+          }
+        }
+      }
     }
   }]);
 
@@ -5629,13 +5758,13 @@ var SimpleDeciderCombinator = function (_DeciderCombinator) {
       if (!this.isAny && !this.isAll) {
         return this.compare_(values, this.left, this.right);
       }
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator5 = Object.keys(values)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var k = _step5.value;
+        for (var _iterator9 = Object.keys(values)[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var k = _step9.value;
 
           var condition = this.compare_(values, k, this.right);
           if (this.isAny && condition) {
@@ -5646,16 +5775,16 @@ var SimpleDeciderCombinator = function (_DeciderCombinator) {
           }
         }
       } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion5 && _iterator5.return) {
-            _iterator5.return();
+          if (!_iteratorNormalCompletion9 && _iterator9.return) {
+            _iterator9.return();
           }
         } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
@@ -5675,27 +5804,27 @@ var SimpleDeciderCombinator = function (_DeciderCombinator) {
       if (this.outputSignal == 'all') {
         if (this.asOne) {
           var r = {};
-          var _iteratorNormalCompletion6 = true;
-          var _didIteratorError6 = false;
-          var _iteratorError6 = undefined;
+          var _iteratorNormalCompletion10 = true;
+          var _didIteratorError10 = false;
+          var _iteratorError10 = undefined;
 
           try {
-            for (var _iterator6 = Object.keys(input)[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-              var k = _step6.value;
+            for (var _iterator10 = Object.keys(input)[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+              var k = _step10.value;
 
               r[k] = 1;
             }
           } catch (err) {
-            _didIteratorError6 = true;
-            _iteratorError6 = err;
+            _didIteratorError10 = true;
+            _iteratorError10 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                _iterator6.return();
+              if (!_iteratorNormalCompletion10 && _iterator10.return) {
+                _iterator10.return();
               }
             } finally {
-              if (_didIteratorError6) {
-                throw _iteratorError6;
+              if (_didIteratorError10) {
+                throw _iteratorError10;
               }
             }
           }
@@ -5731,13 +5860,13 @@ var SumDeciderCombinator = function (_DeciderCombinator2) {
     key: 'getOutput',
     value: function getOutput(input) {
       var sum = 0;
-      var _iteratorNormalCompletion7 = true;
-      var _didIteratorError7 = false;
-      var _iteratorError7 = undefined;
+      var _iteratorNormalCompletion11 = true;
+      var _didIteratorError11 = false;
+      var _iteratorError11 = undefined;
 
       try {
-        for (var _iterator7 = Object.keys(input)[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-          var k = _step7.value;
+        for (var _iterator11 = Object.keys(input)[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+          var k = _step11.value;
 
           var condition = this.compare_(input, k, this.right);
           if (!condition) {
@@ -5746,16 +5875,16 @@ var SumDeciderCombinator = function (_DeciderCombinator2) {
           sum += this.asOne ? 1 : input[k];
         }
       } catch (err) {
-        _didIteratorError7 = true;
-        _iteratorError7 = err;
+        _didIteratorError11 = true;
+        _iteratorError11 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion7 && _iterator7.return) {
-            _iterator7.return();
+          if (!_iteratorNormalCompletion11 && _iterator11.return) {
+            _iterator11.return();
           }
         } finally {
-          if (_didIteratorError7) {
-            throw _iteratorError7;
+          if (_didIteratorError11) {
+            throw _iteratorError11;
           }
         }
       }
@@ -5785,13 +5914,13 @@ var FilterDeciderCombinator = function (_DeciderCombinator3) {
     key: 'getOutput',
     value: function getOutput(input) {
       var r = {};
-      var _iteratorNormalCompletion8 = true;
-      var _didIteratorError8 = false;
-      var _iteratorError8 = undefined;
+      var _iteratorNormalCompletion12 = true;
+      var _didIteratorError12 = false;
+      var _iteratorError12 = undefined;
 
       try {
-        for (var _iterator8 = Object.keys(input)[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var k = _step8.value;
+        for (var _iterator12 = Object.keys(input)[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+          var k = _step12.value;
 
           var condition = this.compare_(input, k, this.right);
           if (!condition) {
@@ -5800,16 +5929,16 @@ var FilterDeciderCombinator = function (_DeciderCombinator3) {
           r[k] = this.asOne ? 1 : input[k];
         }
       } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
+        _didIteratorError12 = true;
+        _iteratorError12 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion8 && _iterator8.return) {
-            _iterator8.return();
+          if (!_iteratorNormalCompletion12 && _iterator12.return) {
+            _iterator12.return();
           }
         } finally {
-          if (_didIteratorError8) {
-            throw _iteratorError8;
+          if (_didIteratorError12) {
+            throw _iteratorError12;
           }
         }
       }
@@ -5900,8 +6029,8 @@ var Label = function (_Combinator7) {
     value: function initElements() {
       var _arr2 = [this.thumbnail, this.detail];
 
-      for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-        var elem = _arr2[_i2];
+      for (var _i4 = 0; _i4 < _arr2.length; _i4++) {
+        var elem = _arr2[_i4];
         elem.classList.add('h' + this.level);
         elem.textContent = this.text;
       }
@@ -6336,11 +6465,11 @@ var CircuitNetwork = function (_utils$Renderable) {
           if (hiliteIndex) {
             var k1 = x1 + ',' + y1;
             if (!activeConnections[k1]) {
-              activeConnections[k1] = { x: x1, y: y1 };
+              activeConnections[k1] = { x: x1, y: y1, out: segment.from.hOffset };
             }
             var k2 = x2 + ',' + y2;
             if (!activeConnections[k2]) {
-              activeConnections[k2] = { x: x2, y: y2 };
+              activeConnections[k2] = { x: x2, y: y2, out: segment.to.hOffset };
             }
           }
         }
@@ -6375,6 +6504,15 @@ var CircuitNetwork = function (_utils$Renderable) {
           circle.setAttribute('stroke-width', 2);
           circle.setAttribute('stroke', 'black');
           circle.setAttribute('fill', 'white');
+
+          if (c.out) {
+            var c2 = createSvgElement_(this.segmentOverlay, 'circle');
+            c2.setAttribute('cx', c.x);
+            c2.setAttribute('cy', c.y);
+            c2.setAttribute('r', 2);
+            c2.setAttribute('stroke-width', 1);
+            c2.setAttribute('stroke', 'black');
+          }
         }
       } catch (err) {
         _didIteratorError4 = true;
@@ -7878,7 +8016,7 @@ var Editor = function () {
 
     var run = utils.createHtmlElement(menu, 'div', ['run', 'mode']);
     createButton_(run, 'Edit', 'code', function () {
-      return _this.returnToEditMode();
+      _this.returnToEditMode();setActive(pauseBtn);
     });
     pauseBtn = createButton_(run, 'Pause', 'pause', function () {
       _this.compiled.pause();setActive(pauseBtn);
