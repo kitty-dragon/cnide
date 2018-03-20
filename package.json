@@ -17,6 +17,7 @@
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "commander": "^2.15.0",
+    "denque": "^1.2.3",
     "mz": "^2.7.0",
     "pako": "^1.0.6"
   },
