@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+const program = require('commander')
+const fs      = require('mz/fs')
+const cnide   = require('../')
+const pkg     = require('../package.json')
+
+program
+  .version(pkg.version)
+  .usage('[-j] <file.cn>')
+  .option('-j, --json', 'Output as json')
+  .parse(process.argv)
+
+if (program.args.length !== 1) {
+  program.help()
+  return
+}
+
+;(async () => {
+  let src = await fs.readFile(program.args[0], 'utf8')
+  let cn = await cnide.compile(src)
+  console.log(cnide.serialize(cn, program.json))
+})().catch(console.log)

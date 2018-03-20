@@ -20337,6 +20337,10 @@ module.exports={
     "factorio",
     "circuit network"
   ],
+  "bin": {
+    "cncc": "bin/cncc",
+    "cntest": "bin/cntest"
+  },
   "homepage": "https://kitty-dragon.github.io/cnide/",
   "repository": {
     "type": "git",
