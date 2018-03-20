@@ -6485,7 +6485,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var network = require('../');
+var combinators = require('./combinators');
 
 /**
  * The size of a square within which all combinators can connect to each other without
@@ -6957,14 +6957,14 @@ var Segmenter_ = function () {
         }
 
         if (needPole) {
-          var pole = new network.combinators.Pole(_combinator.inputs, _combinator.outputs);
+          var pole = new combinators.Pole(_combinator.inputs, _combinator.outputs);
           cn.add(pole);
           // First insert the pole into the overall positions obj. The pole is inserted so
           // there are no gaps in coverage, so the next combinator (that the current one can't
           // reach) is within or past this pole's range.
-          var poleIndex = i + CLIQUE_SIZE * Math.floor((_combinator instanceof network.combinators.Pole ? POLE_DISTANCE : CLIQUE_SIZE) / 2);
+          var poleIndex = i + CLIQUE_SIZE * Math.floor((_combinator instanceof combinators.Pole ? POLE_DISTANCE : CLIQUE_SIZE) / 2);
           for (var j = this.positions_.length; j < poleIndex; j++) {
-            this.positions_[j] = new network.combinators.Label('');
+            this.positions_[j] = new combinators.Label('');
           }
           this.positions_.splice(poleIndex, 0, pole);
           var _iteratorNormalCompletion9 = true;
@@ -7059,7 +7059,7 @@ segmenting.WireColorCalculator = WireColorCalculator;
 segmenting.getSegments = getSegments;
 module.exports = segmenting;
 
-},{"../":2}],7:[function(require,module,exports){
+},{"./combinators":3}],7:[function(require,module,exports){
 (function (global){
 'use strict';
 
