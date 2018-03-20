@@ -44,6 +44,8 @@ body {
     transition: background 0.3s ease-out; }
     .menu .btn.right {
       float: right; }
+    .menu .btn.active {
+      background: rgba(255, 255, 255, 0.08); }
     .menu .btn:hover {
       background: rgba(255, 255, 255, 0.16); }
     .menu .btn .icon {

@@ -7852,21 +7852,33 @@ var Editor = function () {
     gitHub.target = 'blank';
     gitHub.classList.add('right');
 
+    var pauseBtn = void 0,
+        slowBtn = void 0,
+        fastBtn = void 0,
+        setActive = function setActive(btn) {
+      var _arr = [pauseBtn, slowBtn, fastBtn];
+
+      for (var _i = 0; _i < _arr.length; _i++) {
+        var b = _arr[_i];
+        b.classList[b === btn ? 'add' : 'remove']('active');
+      }
+    };
+
     var run = utils.createHtmlElement(menu, 'div', ['run', 'mode']);
     createButton_(run, 'Edit', 'code', function () {
       return _this.returnToEditMode();
     });
-    createButton_(run, 'Pause', 'pause', function () {
-      return _this.compiled.pause();
+    pauseBtn = createButton_(run, 'Pause', 'pause', function () {
+      _this.compiled.pause();setActive(pauseBtn);
     });
     createButton_(run, 'Step', 'step-forward', function () {
-      return _this.compiled.step();
+      _this.compiled.step();setActive(pauseBtn);
     });
-    createButton_(run, 'Slow', 'play', function () {
-      return _this.compiled.run(500);
+    slowBtn = createButton_(run, 'Slow', 'play', function () {
+      _this.compiled.run(500);setActive(slowBtn);
     });
-    createButton_(run, 'Fast', 'forward', function () {
-      return _this.compiled.run(1000 / 60);
+    fastBtn = createButton_(run, 'Fast', 'forward', function () {
+      _this.compiled.run(1000 / 60);setActive(fastBtn);
     });
 
     var xport = utils.createHtmlElement(menu, 'div', ['export', 'mode']);
