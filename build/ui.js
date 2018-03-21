@@ -6101,7 +6101,7 @@ module.exports = function () {
               break;
             }
 
-            return _context.abrupt('break', 21);
+            return _context.abrupt('continue', 18);
 
           case 15:
             if (!networks[value.name]) {
@@ -7726,6 +7726,7 @@ var Test = function () {
 
         if (cn.tick >= this.max_tick) break;
         cn.step();
+        console.log(cn.tick, cn.state);
       }
     }
   }]);
@@ -8087,7 +8088,7 @@ var Editor = function () {
                 return _context.abrupt('return', null);
 
               case 18:
-                throw _context.t0;
+                alert(_context.t0.message);
 
               case 19:
               case 'end':
