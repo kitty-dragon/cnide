@@ -4287,7 +4287,7 @@ function peg$parse(input, options) {
           Object.keys(params).forEach(w => {
             if (params[w] !== 'wire') return;
 
-            this.add(new Statement(location(), network.combinators.IO, new WiresRef([]), new WiresRef([w])));
+            this.add(new Statement(location(), network.combinators.IO, new WiresRef([w])));
           });
         }
       }

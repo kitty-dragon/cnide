@@ -4693,7 +4693,7 @@ function peg$parse(input, options) {
         Object.keys(params).forEach(function (w) {
           if (params[w] !== 'wire') return;
 
-          _this.add(new Statement(location(), network.combinators.IO, new WiresRef([]), new WiresRef([w])));
+          _this.add(new Statement(location(), network.combinators.IO, new WiresRef([w])));
         });
       }
     }
@@ -5098,16 +5098,17 @@ var Combinator = function () {
 var Pole = function (_Combinator) {
   _inherits(Pole, _Combinator);
 
-  function Pole() {
+  function Pole(inputs) {
     _classCallCheck(this, Pole);
 
-    return _possibleConstructorReturn(this, (Pole.__proto__ || Object.getPrototypeOf(Pole)).apply(this, arguments));
+    return _possibleConstructorReturn(this, (Pole.__proto__ || Object.getPrototypeOf(Pole)).call(this, inputs, []));
   }
+
+  /** @Override */
+
 
   _createClass(Pole, [{
     key: 'cssClass',
-
-    /** @Override */
     value: function cssClass() {
       return 'pole';
     }
@@ -5128,16 +5129,17 @@ var Pole = function (_Combinator) {
 var IO = function (_Combinator2) {
   _inherits(IO, _Combinator2);
 
-  function IO() {
+  function IO(inputs) {
     _classCallCheck(this, IO);
 
-    return _possibleConstructorReturn(this, (IO.__proto__ || Object.getPrototypeOf(IO)).apply(this, arguments));
+    return _possibleConstructorReturn(this, (IO.__proto__ || Object.getPrototypeOf(IO)).call(this, inputs, []));
   }
+
+  /** @Override */
+
 
   _createClass(IO, [{
     key: 'cssClass',
-
-    /** @Override */
     value: function cssClass() {
       return 'io';
     }
@@ -7070,7 +7072,7 @@ var Segmenter_ = function () {
         var _combinator = this.positions_[i];
         _combinator.xPos = Math.floor(i / CLIQUE_SIZE) % 2 == 0 ? i % CLIQUE_SIZE : CLIQUE_SIZE - i % CLIQUE_SIZE - 1;
         _combinator.yPos = Math.floor(i / CLIQUE_SIZE) * 2;
-        var needPole = false;
+        var needPoles = { input: false, output: false };
         var _iteratorNormalCompletion8 = true;
         var _didIteratorError8 = false;
         var _iteratorError8 = undefined;
@@ -7085,7 +7087,7 @@ var Segmenter_ = function () {
             }
             if (this.hDistance_(i, conn, nextConnection) > CLIQUE_SIZE) {
               // The next combinator may be too far to connect, so add a pole.
-              needPole = true;
+              needPoles[conn.hOffset ? 'output' : 'input'] = true;
             } else {
               // Can't connect the combinator yet. It might be bumped by another
               // wire adding a pole.
@@ -7106,8 +7108,12 @@ var Segmenter_ = function () {
           }
         }
 
-        if (needPole) {
-          var pole = new combinators.Pole(_combinator.inputs, _combinator.outputs);
+        var _arr = ['input', 'output'];
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var k = _arr[_i];
+          if (!needPoles[k]) continue;
+
+          var pole = new combinators.Pole(k === 'input' ? _combinator.inputs : _combinator.outputs);
           cn.add(pole);
           // First insert the pole into the overall positions obj. The pole is inserted so
           // there are no gaps in coverage, so the next combinator (that the current one can't
@@ -7117,73 +7123,73 @@ var Segmenter_ = function () {
             this.positions_[j] = new combinators.Label('');
           }
           this.positions_.splice(poleIndex, 0, pole);
-          var _iteratorNormalCompletion9 = true;
-          var _didIteratorError9 = false;
-          var _iteratorError9 = undefined;
+          var _iteratorNormalCompletion10 = true;
+          var _didIteratorError10 = false;
+          var _iteratorError10 = undefined;
 
           try {
-            for (var _iterator9 = getConnections_(_combinator)[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var _conn = _step9.value;
+            for (var _iterator10 = getConnections_(_combinator)[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+              var _conn2 = _step10.value;
 
-              var poleConn = new WireConnection(pole, _conn.wire, _conn.hOffset);
+              var poleConn = new WireConnection(pole, _conn2.wire, _conn2.hOffset);
               // Link the combinator to the pole.
-              this.wireSegments.push(new WireSegment(colors[_conn.wire], _conn, poleConn));
+              this.wireSegments.push(new WireSegment(colors[_conn2.wire], _conn2, poleConn));
               // Next insert the pole connections into all the wire queues at
               // their correct positions.
               var indexInQueue = 1;
-              if (wires[_conn.wire][1]) {
+              if (wires[_conn2.wire][1]) {
                 for (var _j2 = i; _j2 < this.poleIndex; _j2++) {
-                  if (this.positions_[_j2] == wires[_conn.wire][indexInQueue]) {
+                  if (this.positions_[_j2] == wires[_conn2.wire][indexInQueue]) {
                     indexInQueue++;
                   }
                 }
               }
-              wires[_conn.wire].splice(indexInQueue, 0, poleConn);
+              wires[_conn2.wire].splice(indexInQueue, 0, poleConn);
             }
           } catch (err) {
-            _didIteratorError9 = true;
-            _iteratorError9 = err;
+            _didIteratorError10 = true;
+            _iteratorError10 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion9 && _iterator9.return) {
-                _iterator9.return();
+              if (!_iteratorNormalCompletion10 && _iterator10.return) {
+                _iterator10.return();
               }
             } finally {
-              if (_didIteratorError9) {
-                throw _iteratorError9;
+              if (_didIteratorError10) {
+                throw _iteratorError10;
               }
             }
           }
         }
-        var _iteratorNormalCompletion10 = true;
-        var _didIteratorError10 = false;
-        var _iteratorError10 = undefined;
+        var _iteratorNormalCompletion9 = true;
+        var _didIteratorError9 = false;
+        var _iteratorError9 = undefined;
 
         try {
-          for (var _iterator10 = getConnections_(_combinator)[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-            var _conn2 = _step10.value;
+          for (var _iterator9 = getConnections_(_combinator)[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+            var _conn = _step9.value;
 
-            wires[_conn2.wire].shift();
-            var nextConnection = wires[_conn2.wire][0];
+            wires[_conn.wire].shift();
+            var nextConnection = wires[_conn.wire][0];
             if (!nextConnection) {
               continue;
             }
-            if (this.hDistance_(i, _conn2, nextConnection) <= CLIQUE_SIZE) {
-              var ws = new WireSegment(colors[_conn2.wire], _conn2, nextConnection);
+            if (this.hDistance_(i, _conn, nextConnection) <= CLIQUE_SIZE) {
+              var ws = new WireSegment(colors[_conn.wire], _conn, nextConnection);
               this.wireSegments.push(ws);
             }
           }
         } catch (err) {
-          _didIteratorError10 = true;
-          _iteratorError10 = err;
+          _didIteratorError9 = true;
+          _iteratorError9 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion10 && _iterator10.return) {
-              _iterator10.return();
+            if (!_iteratorNormalCompletion9 && _iterator9.return) {
+              _iterator9.return();
             }
           } finally {
-            if (_didIteratorError10) {
-              throw _iteratorError10;
+            if (_didIteratorError9) {
+              throw _iteratorError9;
             }
           }
         }
