@@ -7325,6 +7325,11 @@ module.exports = function (cn) {
         y: element.yPos
       };
 
+      if (element instanceof network.combinators.ArithmeticCombinator || element instanceof network.combinators.DeciderCombinator) {
+        // for 1x2 items center is shifted 0.5 positions down
+        entity.position.y += 0.5;
+      }
+
       if (element instanceof network.combinators.ConstantCombinator && Object.keys(element.values).length) {
         var filters = [];
         entity.control_behavior = { filters: filters };
@@ -7398,11 +7403,11 @@ module.exports = function (cn) {
         _conditions.copy_count_from_input = !element.asOne;
       }
 
-      if (element instanceof network.combinators.IO && element.outputs.length) {
+      if (element instanceof network.combinators.IO && element.inputs.length) {
         var _filters = [];
         entity.control_behavior = { filters: _filters, is_on: false };
 
-        var letters = element.outputs[0].toUpperCase().replace(/^[^A-Z]+|[^A-Z]+$/g, '').replace(/[^A-Z]+/g, ' ');
+        var letters = element.inputs[0].toUpperCase().replace(/^[^A-Z]+|[^A-Z]+$/g, '').replace(/[^A-Z]+/g, ' ');
 
         var _index = 0;
 
