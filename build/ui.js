@@ -5039,7 +5039,7 @@ var Combinator = function () {
 
       var classList = ['combinator', this.cssClass()];
       this.thumbnail = utils.createHtmlElement(thumbParent, 'div', classList.concat(['thumbnail']));
-      this.thumbnail.style.left = 20 * this.xPos + '%';
+      this.thumbnail.style.left = 100 / 6 * this.xPos + '%';
       this.thumbnail.style.top = COMBINATOR_HALF_HEIGHT * this.yPos + 'px';
       this.detail = utils.createHtmlElement(detailParent, 'div', classList.concat(['detail']));
       this.initElements();
@@ -6639,16 +6639,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var combinators = require('./combinators');
 
-/**
- * The size of a square within which all combinators can connect to each other without
- * poles.
- */
-var CLIQUE_SIZE = 5;
+var ROW_SIZE = 6;
+var MAX_DISTANCE = 17;
 
-/** The distance between poles. */
-var POLE_DISTANCE = 8;
-
-var WIRE_INSET = 20;
 var SVG_COLORS = { red: 'red', green: 'green' };
 
 var SegmentingError = function (_Error) {
@@ -7005,12 +6998,6 @@ var Segmenter_ = function () {
   }*/
 
   _createClass(Segmenter_, [{
-    key: 'hDistance_',
-    value: function hDistance_(index, connection, nextConnection) {
-      var nextI = this.positions_.indexOf(nextConnection.combinator, index);
-      return Math.floor(nextI / CLIQUE_SIZE) + nextConnection.hOffset - (Math.floor(index / CLIQUE_SIZE) + connection.hOffset);
-    }
-  }, {
     key: 'parseNetwork',
     value: function parseNetwork(cn, colors) {
       this.positions_ = [];
@@ -7070,8 +7057,8 @@ var Segmenter_ = function () {
 
       for (var i = 0; i < this.positions_.length; i++) {
         var _combinator = this.positions_[i];
-        _combinator.xPos = Math.floor(i / CLIQUE_SIZE) % 2 == 0 ? i % CLIQUE_SIZE : CLIQUE_SIZE - i % CLIQUE_SIZE - 1;
-        _combinator.yPos = Math.floor(i / CLIQUE_SIZE) * 2;
+        _combinator.xPos = Math.floor(i / ROW_SIZE) % 2 == 0 ? i % ROW_SIZE : ROW_SIZE - i % ROW_SIZE - 1;
+        _combinator.yPos = Math.floor(i / ROW_SIZE) * 2;
         var needPoles = { input: false, output: false };
         var _iteratorNormalCompletion8 = true;
         var _didIteratorError8 = false;
@@ -7082,10 +7069,9 @@ var Segmenter_ = function () {
             var conn = _step8.value;
 
             var nextConnection = wires[conn.wire][1];
-            if (!nextConnection) {
-              continue;
-            }
-            if (this.hDistance_(i, conn, nextConnection) > CLIQUE_SIZE) {
+            if (!nextConnection) continue;
+            var nextCombinatorId = this.positions_.indexOf(nextConnection.combinator);
+            if (nextCombinatorId - i > MAX_DISTANCE) {
               // The next combinator may be too far to connect, so add a pole.
               needPoles[conn.hOffset ? 'output' : 'input'] = true;
             } else {
@@ -7118,7 +7104,7 @@ var Segmenter_ = function () {
           // First insert the pole into the overall positions obj. The pole is inserted so
           // there are no gaps in coverage, so the next combinator (that the current one can't
           // reach) is within or past this pole's range.
-          var poleIndex = i + CLIQUE_SIZE * Math.floor((_combinator instanceof combinators.Pole ? POLE_DISTANCE : CLIQUE_SIZE) / 2);
+          var poleIndex = i + MAX_DISTANCE;
           for (var j = this.positions_.length; j < poleIndex; j++) {
             this.positions_[j] = new combinators.Label('');
           }
@@ -7131,6 +7117,7 @@ var Segmenter_ = function () {
             for (var _iterator10 = getConnections_(_combinator)[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
               var _conn2 = _step10.value;
 
+              if (_conn2.hOffset !== (k === 'input' ? 0 : 1)) continue;
               var poleConn = new WireConnection(pole, _conn2.wire, _conn2.hOffset);
               // Link the combinator to the pole.
               this.wireSegments.push(new WireSegment(colors[_conn2.wire], _conn2, poleConn));
@@ -7174,10 +7161,10 @@ var Segmenter_ = function () {
             if (!nextConnection) {
               continue;
             }
-            if (this.hDistance_(i, _conn, nextConnection) <= CLIQUE_SIZE) {
-              var ws = new WireSegment(colors[_conn.wire], _conn, nextConnection);
-              this.wireSegments.push(ws);
-            }
+            //if (this.hDistance_(i, conn, nextConnection) <= MAX_DISTANCE) {
+            var ws = new WireSegment(colors[_conn.wire], _conn, nextConnection);
+            this.wireSegments.push(ws);
+            //}
           }
         } catch (err) {
           _didIteratorError9 = true;
@@ -7207,7 +7194,6 @@ var getSegments = function getSegments(cn, colors) {
 };
 
 var segmenting = {};
-segmenting.CLIQUE_SIZE = CLIQUE_SIZE;
 segmenting.SegmentingError = SegmentingError;
 segmenting.WireConnection = WireConnection;
 segmenting.WireSegment = WireSegment;

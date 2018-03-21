@@ -270,7 +270,7 @@ body {
     font-weight: bold; }
   .combinator.thumbnail {
     position: absolute;
-    width: 20%;
+    width: 16.66667%;
     height: 96px;
     z-index: 2; }
     .combinator.thumbnail .operator, .combinator.thumbnail .button {
