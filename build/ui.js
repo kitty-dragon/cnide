@@ -7125,8 +7125,8 @@ var Segmenter_ = function () {
               // their correct positions.
               var indexInQueue = 1;
               if (wires[_conn2.wire][1]) {
-                for (var _j2 = i; _j2 < this.poleIndex; _j2++) {
-                  if (this.positions_[_j2] == wires[_conn2.wire][indexInQueue]) {
+                for (var _j2 = i; _j2 < poleIndex; _j2++) {
+                  if (this.positions_[_j2] == wires[_conn2.wire][indexInQueue].combinator) {
                     indexInQueue++;
                   }
                 }
@@ -7723,7 +7723,6 @@ var Test = function () {
 
         if (cn.tick >= this.max_tick) break;
         cn.step();
-        console.log(cn.tick, cn.state);
       }
     }
   }]);
