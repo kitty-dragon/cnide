@@ -500,9 +500,14 @@ function peg$parse(input, options) {
       peg$c157 = function peg$c157(range, wire, values) {
     return { type: 'assert', start: range[0], end: range[1], wire: wire, values: values };
   },
-      peg$c158 = "test",
-      peg$c159 = peg$literalExpectation("test", false),
-      peg$c160 = function peg$c160(netname, nodes) {
+      peg$c158 = "print",
+      peg$c159 = peg$literalExpectation("print", false),
+      peg$c160 = function peg$c160(range, wire) {
+    return { type: 'print', start: range[0], end: range[1], wire: wire };
+  },
+      peg$c161 = "test",
+      peg$c162 = peg$literalExpectation("test", false),
+      peg$c163 = function peg$c163(netname, nodes) {
     var result = new network.test.Test(netname);
     var _iteratorNormalCompletion4 = true;
     var _didIteratorError4 = false;
@@ -4461,12 +4466,70 @@ function peg$parse(input, options) {
     return s0;
   }
 
+  function peg$parsePrintTestStatement() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    s1 = peg$parseRange();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 5) === peg$c158) {
+          s3 = peg$c158;
+          peg$currPos += 5;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c159);
+          }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parseWire();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parse_();
+              if (s6 !== peg$FAILED) {
+                peg$savedPos = s0;
+                s1 = peg$c160(s1, s5);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
   function peg$parseTestStatement() {
     var s0;
 
     s0 = peg$parsePulseTestStatement();
     if (s0 === peg$FAILED) {
       s0 = peg$parseAssertTestStatement();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsePrintTestStatement();
+      }
     }
 
     return s0;
@@ -4476,13 +4539,13 @@ function peg$parse(input, options) {
     var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
 
     s0 = peg$currPos;
-    if (input.substr(peg$currPos, 4) === peg$c158) {
-      s1 = peg$c158;
+    if (input.substr(peg$currPos, 4) === peg$c161) {
+      s1 = peg$c161;
       peg$currPos += 4;
     } else {
       s1 = peg$FAILED;
       if (peg$silentFails === 0) {
-        peg$fail(peg$c159);
+        peg$fail(peg$c162);
       }
     }
     if (s1 !== peg$FAILED) {
@@ -4552,7 +4615,7 @@ function peg$parse(input, options) {
                     }
                     if (s9 !== peg$FAILED) {
                       peg$savedPos = s0;
-                      s1 = peg$c160(s3, s7);
+                      s1 = peg$c163(s3, s7);
                       s0 = s1;
                     } else {
                       peg$currPos = s0;
@@ -7555,6 +7618,7 @@ var Test = function () {
     this.network = network;
     this.asserts = [];
     this.pulses = [];
+    this.prints = [];
     this.max_tick = 0;
   }
 
@@ -7597,6 +7661,8 @@ var Test = function () {
         this.asserts.push(child);
       } else if (child.type === 'pulse') {
         this.pulses.push(child);
+      } else if (child.type === 'print') {
+        this.prints.push(child);
       }
 
       this.max_tick = this.max_tick < child.end ? child.end : this.max_tick;
@@ -7613,71 +7679,12 @@ var Test = function () {
         var _iteratorError2 = undefined;
 
         try {
-          for (var _iterator2 = this.asserts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var assert = _step2.value;
+          for (var _iterator2 = this.prints[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var print = _step2.value;
 
             if (cn.tick < assert.start || cn.tick > assert.end) continue;
 
-            var _iteratorNormalCompletion4 = true;
-            var _didIteratorError4 = false;
-            var _iteratorError4 = undefined;
-
-            try {
-              for (var _iterator4 = assert.values[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                var _ref = _step4.value;
-                var key = _ref.key;
-                var operator = _ref.operator;
-                var value = _ref.value;
-                var used_keys = _ref.used_keys;
-
-                if (key === 'each') {
-                  var _iteratorNormalCompletion5 = true;
-                  var _didIteratorError5 = false;
-                  var _iteratorError5 = undefined;
-
-                  try {
-                    for (var _iterator5 = Object.keys(cn.state[assert.wire] || {})[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                      var signal = _step5.value;
-
-                      if (used_keys[signal]) continue;
-                      var actual = cn.state[assert.wire][signal] || 0;
-                      var success = check_assert(actual, operator, value);
-                      if (!success) throw new Error('Assertion failed at tick ' + cn.tick + ' in each: ' + signal + '=' + actual + ' ' + operator + ' ' + value);
-                    }
-                  } catch (err) {
-                    _didIteratorError5 = true;
-                    _iteratorError5 = err;
-                  } finally {
-                    try {
-                      if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                        _iterator5.return();
-                      }
-                    } finally {
-                      if (_didIteratorError5) {
-                        throw _iteratorError5;
-                      }
-                    }
-                  }
-                } else {
-                  var _actual = (cn.state[assert.wire] || {})[key] || 0;
-                  var _success = check_assert(_actual, operator, value);
-                  if (!_success) throw new Error('Assertion failed at tick ' + cn.tick + ': ' + key + '=' + _actual + ' ' + operator + ' ' + value);
-                }
-              }
-            } catch (err) {
-              _didIteratorError4 = true;
-              _iteratorError4 = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                  _iterator4.return();
-                }
-              } finally {
-                if (_didIteratorError4) {
-                  throw _iteratorError4;
-                }
-              }
-            }
+            console.log(cn.tick + ':', assert.wire, Object.keys(cn.state[assert.wire] || {}));
           }
         } catch (err) {
           _didIteratorError2 = true;
@@ -7699,12 +7706,71 @@ var Test = function () {
         var _iteratorError3 = undefined;
 
         try {
-          for (var _iterator3 = this.pulses[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var pulse = _step3.value;
+          for (var _iterator3 = this.asserts[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var _assert = _step3.value;
 
-            if (cn.tick < pulse.start || cn.tick > pulse.end) continue;
-            cn.state[pulse.wire] = cn.state[pulse.wire] || {};
-            utils.mergeSignals(cn.state[pulse.wire], pulse.values);
+            if (cn.tick < _assert.start || cn.tick > _assert.end) continue;
+
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
+
+            try {
+              for (var _iterator5 = _assert.values[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                var _ref = _step5.value;
+                var key = _ref.key;
+                var operator = _ref.operator;
+                var value = _ref.value;
+                var used_keys = _ref.used_keys;
+
+                if (key === 'each') {
+                  var _iteratorNormalCompletion6 = true;
+                  var _didIteratorError6 = false;
+                  var _iteratorError6 = undefined;
+
+                  try {
+                    for (var _iterator6 = Object.keys(cn.state[_assert.wire] || {})[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                      var signal = _step6.value;
+
+                      if (used_keys[signal]) continue;
+                      var actual = cn.state[_assert.wire][signal] || 0;
+                      var success = check_assert(actual, operator, value);
+                      if (!success) throw new Error('Assertion failed at tick ' + cn.tick + ' in each: ' + signal + '=' + actual + ' ' + operator + ' ' + value);
+                    }
+                  } catch (err) {
+                    _didIteratorError6 = true;
+                    _iteratorError6 = err;
+                  } finally {
+                    try {
+                      if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                        _iterator6.return();
+                      }
+                    } finally {
+                      if (_didIteratorError6) {
+                        throw _iteratorError6;
+                      }
+                    }
+                  }
+                } else {
+                  var _actual = (cn.state[_assert.wire] || {})[key] || 0;
+                  var _success = check_assert(_actual, operator, value);
+                  if (!_success) throw new Error('Assertion failed at tick ' + cn.tick + ': ' + key + '=' + _actual + ' ' + operator + ' ' + value);
+                }
+              }
+            } catch (err) {
+              _didIteratorError5 = true;
+              _iteratorError5 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                  _iterator5.return();
+                }
+              } finally {
+                if (_didIteratorError5) {
+                  throw _iteratorError5;
+                }
+              }
+            }
           }
         } catch (err) {
           _didIteratorError3 = true;
@@ -7717,6 +7783,33 @@ var Test = function () {
           } finally {
             if (_didIteratorError3) {
               throw _iteratorError3;
+            }
+          }
+        }
+
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
+
+        try {
+          for (var _iterator4 = this.pulses[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var pulse = _step4.value;
+
+            if (cn.tick < pulse.start || cn.tick > pulse.end) continue;
+            cn.state[pulse.wire] = cn.state[pulse.wire] || {};
+            utils.mergeSignals(cn.state[pulse.wire], pulse.values);
+          }
+        } catch (err) {
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+              _iterator4.return();
+            }
+          } finally {
+            if (_didIteratorError4) {
+              throw _iteratorError4;
             }
           }
         }
@@ -7742,7 +7835,7 @@ var TestSuite = function () {
     key: 'parse',
     value: function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(src) {
-        var result, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _ref3, _ref4, type, value;
+        var result, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, _ref3, _ref4, type, value;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -7754,19 +7847,19 @@ var TestSuite = function () {
                 this.networks = Object.create(null);
                 this.tests = Object.create(null);
 
-                _iteratorNormalCompletion6 = true;
-                _didIteratorError6 = false;
-                _iteratorError6 = undefined;
+                _iteratorNormalCompletion7 = true;
+                _didIteratorError7 = false;
+                _iteratorError7 = undefined;
                 _context.prev = 6;
-                _iterator6 = result[Symbol.iterator]();
+                _iterator7 = result[Symbol.iterator]();
 
               case 8:
-                if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
+                if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
                   _context.next = 23;
                   break;
                 }
 
-                _ref3 = _step6.value;
+                _ref3 = _step7.value;
                 _ref4 = _slicedToArray(_ref3, 2);
                 type = _ref4[0];
                 value = _ref4[1];
@@ -7795,7 +7888,7 @@ var TestSuite = function () {
                 }
 
               case 20:
-                _iteratorNormalCompletion6 = true;
+                _iteratorNormalCompletion7 = true;
                 _context.next = 8;
                 break;
 
@@ -7806,26 +7899,26 @@ var TestSuite = function () {
               case 25:
                 _context.prev = 25;
                 _context.t0 = _context['catch'](6);
-                _didIteratorError6 = true;
-                _iteratorError6 = _context.t0;
+                _didIteratorError7 = true;
+                _iteratorError7 = _context.t0;
 
               case 29:
                 _context.prev = 29;
                 _context.prev = 30;
 
-                if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                  _iterator6.return();
+                if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                  _iterator7.return();
                 }
 
               case 32:
                 _context.prev = 32;
 
-                if (!_didIteratorError6) {
+                if (!_didIteratorError7) {
                   _context.next = 35;
                   break;
                 }
 
-                throw _iteratorError6;
+                throw _iteratorError7;
 
               case 35:
                 return _context.finish(32);
@@ -7852,13 +7945,13 @@ var TestSuite = function () {
     value: function run() {
       var result = [];
 
-      var _iteratorNormalCompletion7 = true;
-      var _didIteratorError7 = false;
-      var _iteratorError7 = undefined;
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
 
       try {
-        for (var _iterator7 = Object.keys(this.tests)[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-          var _network = _step7.value;
+        for (var _iterator8 = Object.keys(this.tests)[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var _network = _step8.value;
 
           if (!this.networks[_network]) {
             throw new Error('Network ' + _network + ' not found');
@@ -7866,42 +7959,42 @@ var TestSuite = function () {
 
           var cn = this.networks[_network].create(this.networks);
 
-          var _iteratorNormalCompletion8 = true;
-          var _didIteratorError8 = false;
-          var _iteratorError8 = undefined;
+          var _iteratorNormalCompletion9 = true;
+          var _didIteratorError9 = false;
+          var _iteratorError9 = undefined;
 
           try {
-            for (var _iterator8 = this.tests[_network][Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-              var test = _step8.value;
+            for (var _iterator9 = this.tests[_network][Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+              var test = _step9.value;
 
               result.push(test.run(cn));
             }
           } catch (err) {
-            _didIteratorError8 = true;
-            _iteratorError8 = err;
+            _didIteratorError9 = true;
+            _iteratorError9 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion8 && _iterator8.return) {
-                _iterator8.return();
+              if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                _iterator9.return();
               }
             } finally {
-              if (_didIteratorError8) {
-                throw _iteratorError8;
+              if (_didIteratorError9) {
+                throw _iteratorError9;
               }
             }
           }
         }
       } catch (err) {
-        _didIteratorError7 = true;
-        _iteratorError7 = err;
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion7 && _iterator7.return) {
-            _iterator7.return();
+          if (!_iteratorNormalCompletion8 && _iterator8.return) {
+            _iterator8.return();
           }
         } finally {
-          if (_didIteratorError7) {
-            throw _iteratorError7;
+          if (_didIteratorError8) {
+            throw _iteratorError8;
           }
         }
       }
